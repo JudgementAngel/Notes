@@ -1,0 +1,46 @@
+线性空间和伽马空间是两种不同的渲染，前者效果更好，但也更消耗性能。
+matcap是把法线转换到摄像机空间，以发现的R和G作为UV，对matcapTexture进行采样
+有的参数不能使用0或者1，0.017-0.063
+
+ShaderForge插件会把Unity Shader的变种的下拉框给覆盖掉，慎用
+
+星光效果算法：
+
+LightWrapping算法：
+
+头发渲染的算法：
+
+
+SHADER_TARGET 被定义为与着色器目标编译模型匹配的数值
+着色器被编译成Shader Model3.0时为30；
+#if SHADER_TARGET < 30
+    // less than Shader model 3.0:
+    // very limited Shader capabilities, do some approximation
+#else
+    // decent capabilities, do a better thing
+#endif
+
+UnityCG.cginc中的ShadeSH9(float4 normal);函数可以直接取到场景中灯光探针的信息
+
+
+让一个颜色明暗对比变大，可以采用对颜色值进行Pow运算，也可以对颜色值进行Remap 0-1到0-1的运算（调整色阶），只调整Remap的输入的最小值变大
+
+
+同一个物体的渲染队列是由三角面的创建顺序决定的
+PS 里的PNG是直接把所有的透明的删掉，创建Alpha通道没用
+
+做类似绳子的物体的时候，可以采用逆向工程，先做一条竖直的，分好UV，做好高模，烘培贴图，然后再做弯曲的绳子，只要把绳子的UV变成竖直的和之前那个匹配起来就可以了。
+
+
+游戏的风格一定要从原画开始就要考虑，原画出了问题，后面就很难改，很难出效果
+
+half4 frag(v2f i ,float facing:VFACE):SV_Target  //facing可用来判断正反面
+
+不同的材质球属性就会导致不同DC
+
+12、MaxScript的逻辑运算符是and or
+13、MaxScript 可以加载.Net的东西，用dotNet.loadAssembly
+14、粒子系统的Shader颜色必须调成128，否则会有问题
+
+02083963555
+13686985677
