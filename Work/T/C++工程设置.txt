@@ -1,0 +1,8 @@
+工程设置：
+常规：
+    输出目录：../../temp/$(Configuration)/$(Platform)/$(ProjectName)\
+    中间目录：../../temp/$(Configuration)/$(Platform)/$(ProjectName)\
+C/C++：
+    附加包含目录：../../Dependencies/include;%(AdditionalIncludeDirectories)
+链接器：
+    附加库目录：../../Dependencies/lib/$(Platform);%(AdditionalLibraryDirectories)

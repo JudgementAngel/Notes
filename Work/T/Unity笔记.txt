@@ -1,0 +1,7 @@
+Quaternion.Euler可以把欧拉角转换成四元数
+Quaternion.eulerAngles可以吧四元数装换成欧拉角
+Instantiate实例化的时候需要的是四元数
+Unity重新加载场景的时候出现不渲染天空盒的情况时，Window->Lighting里把Auto渲染勾掉，手动Build
+unity里的单位是米
+
+Unity自带的碰撞体下有一个系统内置的OnMouseDown的协程函数，可以重写它来实现用鼠标对游戏内碰撞体的交互

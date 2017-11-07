@@ -1,0 +1,17 @@
+OpenGLES 是嵌入式的标准
+动态库 就是把一些通用的封装起来，不需要每次都进行编译
+window系统没有提供OpenGLES的实现，实际是调用D3D实现的
+
+四元数的效率比矩阵高
+
+压缩纹理：
+基于OpenGL ES 的压缩纹理有常见的如下几种实现
+    1、ETC1  (Ericsson texture compression)
+    2、PVRTC (PowerVR texture compression)
+    3、ATITC (ATI texture compression)
+    4、S3TC  (S3 texture compression)
+
+压缩纹理必须是4的整数倍
+
+碰撞体包围盒 AABB :是指包围盒的边和世界坐标的基向量是平行或者垂直的。轴向包围盒，计算量小
+当物体发生旋转之后，我们的包围盒不会跟着旋转，但是会跟着变大变小

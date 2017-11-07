@@ -1,0 +1,172 @@
+Unite-Unity项目架构
+
+ARCHITECTURES
+    EmptyGO
+    Simple GameManager
+    Manager of Managers
+    MVSC(StrageloC)
+    MVVM(uFrame)
+Manager of Managers
+    MainManager
+        EventManager    : Streamline messaging between classes
+        AudioManager    : Control audio playback from one place
+        GUIManager      : Centralize the controls to handle clicks.etc
+        PoolManager     : Persist prefab instances in RAM and display then as needed
+        LevelManager    : Queue up levels and perform transitions between them
+        GameManager     : Manager the core game mechanics,usually projectspecific
+        SaveManager     : Save and load user preferences and achievements
+        MenuManager     : Controls all menus animation contents and behaviours
+
+    A mid-size project must have:
+        Level Manager
+        Pool Manager
+        Save Manager
+
+    为Level做一个配置表，每次用LevelManager.LoadNext()
+    mad level manager
+
+    A SIMPLE POOL DESIGN
+    Maintain alist of dormant objects in the pool class:
+    private List<GameObject> dormantObjects = new List<GameObject>();
+    The list contains all different types of game objects/prefabs 
+
+    SPAWN()
+    public GameObject Spawn(GameObject go)
+    {
+        GameObject temp = null;
+        if(dormantObjects.Count > 0)
+        {
+            foreach(GameObject dob in dormantObjects)
+            {
+                if(dob.name == go.name)
+                {
+                    //find an available GameObject
+                    temp = dob;
+                    dormantObject.Remove(temp);
+                    return temp;
+                }
+            }
+        }
+        //Now instantiate a new GameObject
+        temp = GameObject.Instantiate(go) as GameObject;
+        temp.name = go.name;
+        return temp;
+    }
+
+    DESPAWN()
+    public void Despawn(GameObject go)
+    {
+        go.transform.parent = PoolManager.transform;
+        go.SetActive(false);
+        dormantObjects.Add(go);
+        Trim();
+    }
+
+    //先进先出的操作
+    public void Trim()
+    {
+        while(dormantObjects.Count > Capacity)
+        {
+            GameObject dob = dormantObjects[0];
+            dormantObjects.RemoveAt(0);
+            Destory(dob);
+        }
+    }
+
+    问题：
+PROBLEMS
+    This pool is not able to manage the Load/Unload of prefabs.
+    Only dormant objects are managed in the pool,active objects must be managed out of pool separately.
+    The total number of dormant objects can be controlled,rather than the instances of each prefab. 
+
+    A BETTER DESIGN 
+    The recommended pool hierarchy:
+    
+    PoolManager
+        SpawnPool
+            PrefabPool
+                Active instances
+                Inactive instance
+    每一个SpawnPool管理一类物体
+        每一个PrefabPool里只放一个Prefab，用来管理这个Prefab的加载和卸载，以及由他实例化的物体的加载和卸载
+
+    POOLMANAGER
+        Design rules for PoolManager
+            As a singleton
+            Manage multiple SpawnPools
+    SPAWNPOOL 可以定义为一个空的GameObject
+        Design rule for SpawnPool
+            Define an empty object,set its transform as the parent of all the instances in the pool.
+            Manage multiple PrefabPools via a dictionary
+    PREFABPOOL
+        Create a PrefabPool for each prefab
+        Maintains a list of activated objects and another list of deactive objects
+        Centrally manage the Load/Unload process here
+        为了保证不发生卡顿，可以采用缓帧删除，每一帧只删除3-5个 
+
+    SavaManger 采用二进制保存
+    相对Xml和JSON的好处：和Unity的类型能结合得很好；很快
+
+
+    MVCS: STRANGEIOC
+    UI输入输出和逻辑分开，这个事情100%要做，要不然越往后越难做
+    STRANGEIOC 用的是一个反射的概念
+    Bind
+    Basic Structure
+        IBinder.Bind<Key>().To<Value>();
+    The key triggers the value
+    
+    Advanced Structure
+        IBinder Bind<key>().To<value>().ToName(name);
+    The name is adiscriminator :
+        If two bindings have identical keys ,the name serves as a discriminator
+
+    MVCS
+        View 
+            Mediator
+                command
+                    Service
+                    Model
+    MEDIATOR
+        Binding 
+            mediationBinder.Bind<ExampleView>().To<ExampleMediator>();
+
+    BINDING INTERFACE &IMPLEMENTATION
+        if you inject something ,you have to map it,otherwise,it will result in null pointer errors
+        Injection employs reflection ,which is slow 
+
+    STRANGEIOC 依赖于C#的reflection机制，这个reflection是比较费时的操作
+
+    MVVM:UFRAME
+    可视化界面
+
+    用GitHub 要配置Git文件
+
+    Good Architecture = Good Standards
+    1、用C#不要JS
+    2、命名规范：文件夹名称和代码内容相同
+
+    Zero-tolerance for warnings and errors
+    对warnings 和 errors 零容忍
+    Zero-tolerance for runtime memory allocation
+    对动态开辟内存 零容忍
+
+    例如：用一个数组存储，提前就把这个数组声明好，用的时候拿过来用，而不是要用的时候临时声明一个数组，然后再Destory掉
+
+    Use Cache 
+        Cache component references
+            GetComponent<ComponentName>() is slow
+        Cache objects references 
+            GameObject.Find(...)is very slow
+        Memory allocation with object pools
+        Use sharing materials
+
+    美术资源要规范好
+    Reasonable & strict
+    Automatic tools
+
+    Unity Test Tools
+
+    把每一个游戏项目的代码当作可传递的一种资产
+
+

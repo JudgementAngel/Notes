@@ -1,0 +1,33 @@
+world
+level
+actor
+component
+
+Unreal和Unity相通之处
+1、以Level为基础管理单元
+2、基于组件的架构设计
+3、良好的资源引用关系管理
+
+GameObject、MonoBehavior
+Actor、ActorComponent
+SceneComponent
+
+Unreal Gameplay Framework
+
+EPIC研发引擎和游戏的关系
+面向游戏层常用基础框架
+包含一组基类
+
+基础类
+	使用Level管理Actor
+	理解UE4的组件结构
+		Actor/ActorComponent
+		ActorComponent体系
+		Actor体系
+
+Unreal中物理和渲染是密切相关的
+
+Character 是人形的Pawn
+Controller
+	-PlayerController
+	-AIController

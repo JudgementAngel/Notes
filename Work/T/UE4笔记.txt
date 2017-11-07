@@ -1,0 +1,173 @@
+alt + 鼠标中键 可以设定物体的轴心，不过有的物体需要右键在支点处确定偏移
+
+UE4的默认单位是厘米
+T半透明选择
+ctrl+G 创建组
+alt+R 关闭/打开灯光的显示半径
+红色是事件节点
+蓝色是函数节点
+
+Material:
+
+Base Color		//基础颜色
+Metallic(0/1)		//金属
+Roughness(0.1/0.9)	//粗糙度
+Emissivc(glow)		//发光
+Normals			//法线
+Subsurface Color	//次表面颜色
+Pixel
+
+导出静态网格物体的基本要求
+FBX\
+Smoothing Groups	//平滑组
+Tangents and Binormals	//切线和Binormal
+Triangulate		//三角算法
+
+颜色叠加用 Multiply
+线性混合 Lerp
+Append 添加维度
+Add 相加
+
+Particles with Unreal4
+
+Particle
+Particle System
+Emitter Actor
+Particle System Component
+Cascade
+
+Emitter
+Module
+Type Data Module
+Distributions
+
+银幕效果:Camera Settings->Constrain Aspect Ratio
+
+如果你的场景里存在该物体，此时你的变量的类型是object
+如果不存在则是class
+alt+p播放
+循环在执行的时候会暂停游戏
+
+类的命名规范
+	U - UObject 派生类 （Actor系列除外），例如 UTexture2D。
+	A - AActor 的派生类，例如 APawn
+	F - 其他的类或结构体，例如 FText,FVector
+	T - 模板，例如 TArray,TMap,TQueue
+	I - 接口类，例如 ITransaction
+	E - 枚举类型，例如 ESelectionMode
+
+UE4的反射机制&相关的宏定义
+
+	UClass([Specifier,specifier,...],[meta(key = value,key = value, ...)])
+	class ClassName : public ParentName
+	{
+		GENERATED_BODY()
+	
+	}
+	
+	Class Specifier				含义
+	-----------------------------------------------------------------------
+	Abstract		指定这个类为虚基类，不可被实例化；例如UActorComponent就是					一个虚基类
+	
+	Blueprintable/		指定这个class是否可以作为Blueprint的基类；
+	NotBlueprintable	默认值是NotBlueprintable；这个值会被继承，也就是说，如果	
+				父类设定了Blueprintable，那么子类也自动具有此属性
+	
+	BlueprintType		指定这个类的对象可以在Blueprint作为变量使用；
+	
+	ClassGroup = GroupName	在编辑器的Actor Browser视图中使用指定的名称进行分组显示。
+	
+	Config = FileName	例如Config = Game ,如果这个类中有可配置变量
+				UPROPERTY(config 或 globalconfig)，指定这些变量可以存储到						那个ini文件之中
+
+	HideCategories =	在Unreal Editor的属性查看界面中隐藏某些分类的属性； 
+	(Category1,
+	Category2, ...)
+
+	Placeable/NotPlaceable	指定该类的实例是否可以在关卡中放置
+
+	Transient		指定这个类的对象不必保存到磁盘文件中
+
+
+	UPROPERTY([specifier,specifier, ...],[meta(key=value,key=value, ...)])
+
+	Type VariableName;
+
+
+	Property Specifier	含义
+ 	--------------------------------------------------------------------
+
+	Category = CategoryName	指定此属性的类别，主要影响在编辑器视图中显示此属性的分类标签；
+
+	BlueprintReadOnly	指定此属性在Blueprint中是只读的；
+	
+	BlueprintReadWrite	指定此属性在Blueprint中是可读写的；
+
+	EditAnywhere		指定此属性在编辑器的属性窗口中可以编辑；
+
+	Transient		指定此属性是不必存储；在对象加载时，会自动清零；
+
+	VisibleAnywhere		指定此属性在编辑器的属性窗口中可见，但不可编辑；
+
+
+
+
+	UFUNCTION([specifier,specifier, ...],[meta(key=value,key=value, ...)])
+	
+	ReturnType FunctionName([Parameter, Parameter, ...])
+
+	
+	Function Specifier	含义
+	-------------------------------------------------------------------------------
+
+	BlueprintCallable	指定函数可以在Blueprint中调用；
+	
+	Category = CategoryName	指定函数在Blueprint编辑器中的显示分类；
+
+    BlueprintImplementableEvent	此函数可以在Blueprint中重载；
+
+	BlueprintNativeEvent 	此函数可以在Blueprint中重载，同时也包含C++的代码；
+	
+
+基本数据类型
+
+	
+
+C++/Blueprint在虚幻引擎中的地位
+
+	C++面向程序员：项目框架、游戏底层功能编程等
+	Blueprint面向Designer：内容开发，快速搭建原型
+	C++、Blueprint互操作
+
+	Blueprint Function Libraries
+
+
+//如果你要添加 .h 的文件，那么 generated.h 文件必须放在最后
+
+
+什么是动画系统
+	引擎层
+	游戏逻辑层：角色状态控制+动画控制系统
+
+AnimGraph VS AnimTree
+
+	基于节点的动画处理逻辑
+	Pull、Push
+
+动画系统需要解决的问题
+	动画融合、BoneControl、IK、Marph Target
+	动画控制逻辑：push,pull
+
+UE4动画系统的基本概念
+	Anim Sequence
+	Blend Space
+	Montage
+	Anim Graph
+
+
+
+
+
+
+
+
