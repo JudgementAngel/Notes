@@ -42,5 +42,11 @@ half4 frag(v2f i ,float facing:VFACE):SV_Target  //facing可用来判断正反面
 13、MaxScript 可以加载.Net的东西，用dotNet.loadAssembly
 14、粒子系统的Shader颜色必须调成128，否则会有问题
 
+两个物体离得很近的时候，光线就会在这两个物体之间反射，反射不出去，这部分就会变得比较黑
+
+v2f结构体里面的位置都要写成pos，因为有的Unity自带的函数用了这个变量。
+
+UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
+
 02083963555
 13686985677
