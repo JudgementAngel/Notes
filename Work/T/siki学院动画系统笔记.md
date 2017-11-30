@@ -72,7 +72,17 @@ Match Target 的两个时间是开始插值的时间和最终插值到这个点�
 
 ## 9、IK动画
 
+MatchTarget是缓慢插值地设置骨骼到一个值，IK是直接把骨骼设置到某个位置
 
+animation.SetIKPosition();animation.SetIKPositionWeight();
+
+
+
+#TimeLine
+
+过场动画
+
+电影效果
 
 
 
