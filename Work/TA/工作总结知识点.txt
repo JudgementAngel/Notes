@@ -48,5 +48,23 @@ v2f结构体里面的位置都要写成pos，因为有的Unity自带的函数用了这个变量。
 
 UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
 
+注意骨骼旋转模式TCB和欧拉的不同
+
+float3x3 Test : TEXCOORD1 放在v2f中，Unity会自动转化成float3 Test[0] : TEXCOORD1  float3 Test[1] : TEXCOORD2 float3 Test[2] : TEXCOORD3
+
+法线贴图里存的是高模模型空间法线信息转换到切空间的法线信息，由于高模面熟很多，每个面之间都非常平滑，所以Z方向上的偏移最小，影响最小，可以把它舍弃掉存放别的信息。
+
+成组功能要先创建物体，改变他的Parent再改变他的Transform的position和rotation
+
+Unity Shader里Name后面的所有字母必须大写
+
+平行光投射阴影有2种方式：
+Close Fit渲染较高分辨率的阴影，但是如果相机移动时，有时阴影会轻微摆动。Stable Fit渲染的阴影分辨率较低，不过相机移动时不会发生摆动。
+
+缩放Unity地形时，要缩放它的长度宽度和高度
+
+Unity Light 的  cull mask对烘焙没有效果，在5.6.2，官方人员说是一个Bug，由于要重构很多模块，所以暂时不能修复
+
+
 02083963555
 13686985677

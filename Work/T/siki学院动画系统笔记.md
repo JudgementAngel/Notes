@@ -84,5 +84,33 @@ animation.SetIKPosition();animation.SetIKPositionWeight();
 
 电影效果
 
+TimeLine可以对多个物体做动画
+
+Track 轨道：时间线
+
+Activation Track 控制物体的激活与否
+
+Animation Track 位置移动旋转等属性动画
+
+Audio Track 控制声音
+
+物体上的Animator组件是不能删除的
+
+Time line里的动画可以转换成Animation Clip
+
+Animation Extrapolate 
+
+Hold 保持动画开始的位置
+
+Loop 循环播放
+
+Ping-Pong 是来回循环播放
+
+Continue 从零开始播放动画，播放完之后保持自身末尾的位置，然后等到事件时再开始重新播放 这个模式在预览状态和真正运行时的状态是不同的，需要注意一下
+
+None保持在坐标原点
+
+角色动画在编辑器预览模式下和游戏运行时不同，以游戏运行时为准
+
 
 
