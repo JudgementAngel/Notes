@@ -89,7 +89,12 @@ appdata里的COLOR语义必须要大写，不大写在安卓手机上会出错
 
 pc平台对语义关键字的大小写没要求，但是移动平台要求必须明确大小写
 
-Queue必须是 “Geometry”才能接受投影
+Queue必须是 “Geometry”“AlphaTest”才能接受投影
+
+Transparent 和 TransparentCutout烘焙后都不受ndotl影响
+
+Terrain的混合贴图不能压缩，否则会有可能出现一些小黑点，是像素被压缩导致的
+
 
 02083963555
 13686985677
