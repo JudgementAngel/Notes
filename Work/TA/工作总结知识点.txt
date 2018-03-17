@@ -95,6 +95,32 @@ Transparent 和 TransparentCutout烘焙后都不受ndotl影响
 
 Terrain的混合贴图不能压缩，否则会有可能出现一些小黑点，是像素被压缩导致的
 
+使用Lerp处理法线强度，一定要使用normalize，虽然效果看起来几乎一样，但是，经过Blinn-Phong的Pow运算之后就会变得很不一样
+
+Shader 做LOD，分不同的等级，分成多个文件可以决定每个不同物件的开始级别，如果不是出于这个目的，就把Shader的LOD写在同一个文件中做成SubShader
+
+位置信息POSITION 的 精度不能随便更改，要根据场景中最大的距离来定
+
+动态加载烘焙场景可能出现，LightMap_On 关键字失效问题：打包的时候要在一个烘焙过的场景打包；或者使用自定义的LightMap 关键字
+
+com.qti.permission.PROFILER
+
+Unity的float3x3，float4x4这些矩阵，可以通过matrix[0]、matrix[1]这样取值，但是不能通过matrix[0]这种方式赋值，这种赋值在一些型号的手机上会导致赋值不成功,通过float3x3()这种方式赋值
+
+雪雨法线向上的遮罩：mask = saturate( _Sharpness * ( Height - worldNormal.y + _Offset)); 
+
+Glitter 星光：
+fixed3 GlitterSimple(float2 uv,float3 wN,float3 wV,float3 wL)
+{
+fixed4 sparkle = tex2D(_SparkleMap,TRANSFORM_TEX(uv,_SparkleMap));
+half3 glitter = frac(0.6 * wN + 9 * sparkle + wV * wL);
+glitter = saturate(1 - 2.5 * (glitter.x + glitter.y + glitter.z)) * 1.25 * _GlitterIntensity;
+return glitter;
+}
+
+
+
+
 
 02083963555
 13686985677
