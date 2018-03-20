@@ -122,5 +122,9 @@ Round(x) 将x舍入为最接近的整数
 
 如果RenderTexture中要使用stencil buffer 需要RenderTexture的Depth是24位，16位会使stencil 出现错误。
 
+Fragment Shader 最后输出的RGBA值，最好保证在0 -1，Unity有时候的混合模式会读取到大于1或者小于0的值，从而导致混合出问题
+
+Unity Baked Indirect 在过大的世界位置上有问题
+
 02083963555
 13686985677
