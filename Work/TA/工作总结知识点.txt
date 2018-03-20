@@ -118,9 +118,9 @@ glitter = saturate(1 - 2.5 * (glitter.x + glitter.y + glitter.z)) * 1.25 * _Glit
 return glitter;
 }
 
+Round(x) 将x舍入为最接近的整数
 
-
-
+如果RenderTexture中要使用stencil buffer 需要RenderTexture的Depth是24位，16位会使stencil 出现错误。
 
 02083963555
 13686985677
