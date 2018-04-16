@@ -126,5 +126,9 @@ Fragment Shader ×îºóÊä³öµÄRGBAÖµ£¬×îºÃ±£Ö¤ÔÚ0 -1£¬UnityÓÐÊ±ºòµÄ»ìºÏÄ£Ê½»á¶ÁÈ¡µ½´
 
 Unity Baked Indirect ÔÚ¹ý´óµÄÊÀ½çÎ»ÖÃÉÏÓÐÎÊÌâ
 
+Ò»¶¨Òª¸øÃÀÊõ½²Çå³þ meta ÎÄ¼þµÄ×÷ÓÃ£¬IDµÄº¬Òå
+
+Unity×Ô¶¯Õ¹¿ªµÆ¹âÌùÍ¼UV¿ÉÄÜ»á³öÏÖÎÊÌâ£¬ÐèÒª×Ô¼ºÊÖ¶¯ÔÚMaxÀïÕ¹¿ªUV
+
 02083963555
 13686985677
