@@ -1,4 +1,4 @@
-straightforward 直接
+﻿straightforward 直接
 catch 抓住
 complex 复杂
 plain 简单
