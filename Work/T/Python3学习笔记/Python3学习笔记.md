@@ -571,4 +571,93 @@ set和dict的唯一区别仅在于没有存储对应的value，但是，set的�
 
 使用key-value存储结构的dict在Python中非常有用，选择不可变对象作为key很重要，最常用的key是字符串。
 
-tuple虽然是不变对象，但把`(1, 2, 3)` 放入dict 或set中不会报错，把`(1, [2, 3])`放入dict或set中，会报错
+tuple虽然是不变对象，但把`(1, 2, 3)` 放入dict 或set中不会报错，把`(1, [2, 3])`放入dict或set中，会报错。
+
+
+
+------
+
+
+
+Python内置了很多有用的函数，我们可以直接调用。
+
+要调用一个函数，需要知道函数的名称和参数，比如求绝对值的函数`abs`，只有一个参数。可以直接从Python的官方网站查看文档：
+
+<http://docs.python.org/3/library/functions.html#abs>
+
+也可以在交互式命令行通过`help(abs)`查看`abs`函数的帮助信息。
+
+调用函数的时候，如果传入的参数数量不对，会报`TypeError`的错误，并且Python会明确地告诉你：`abs()`有且仅有1个参数，但给出了两个：
+
+```
+>>> abs(1, 2)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: abs() takes exactly one argument (2 given)
+
+```
+
+如果传入的参数数量是对的，但参数类型不能被函数所接受，也会报`TypeError`的错误，并且给出错误信息：`str`是错误的参数类型：
+
+```
+>>> abs('a')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: bad operand type for abs(): 'str'
+```
+
+
+
+### 数据类型转换
+
+Python内置的常用函数还包括数据类型转换函数，比如`int()`函数可以把其他数据类型转换为整数：
+
+```
+>>> int('123')
+123
+>>> int(12.34)
+12
+>>> float('12.34')
+12.34
+>>> str(1.23)
+'1.23'
+>>> str(100)
+'100'
+>>> bool(1)
+True
+>>> bool('')
+False
+
+```
+
+函数名其实就是指向一个函数对象的引用，完全可以把函数名赋给一个变量，相当于给这个函数起了一个“别名”：
+
+```
+>>> a = abs # 变量a指向abs函数
+>>> a(-1) # 所以也可以通过a调用abs函数
+1
+```
+
+如果你已经把`my_abs()`的函数定义保存为`abstest.py`文件了，那么，可以在该文件的当前目录下启动Python解释器，用`from abstest import my_abs`来导入`my_abs()`函数，注意`abstest`是文件名（不含`.py`扩展名）：
+
+
+
+如果想定义一个什么事也不做的空函数，可以用`pass`语句：
+
+```
+def nop():
+    pass
+
+```
+
+`pass`语句什么都不做，那有什么用？实际上`pass`可以用来作为占位符，比如现在还没想好怎么写函数的代码，就可以先放一个`pass`，让代码能运行起来。
+
+`pass`还可以用在其他语句里，比如：
+
+```
+if age >= 18:
+    pass
+
+```
+
+缺少了`pass`，代码运行就会有语法错误。
