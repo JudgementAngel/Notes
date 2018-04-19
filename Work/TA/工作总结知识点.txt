@@ -130,5 +130,10 @@ Unity Baked Indirect 在过大的世界位置上有问题
 
 Unity自动展开灯光贴图UV可能会出现问题，需要自己手动在Max里展开UV
 
+简单的模拟水折射实现：
+o.screen = ComputeScreenPos(o.pos)
+fixed4 reflectTex = tex2D(_ReflectTex,(i.screen.xy/i.scren.w) + normalDir.xy * 0.3);
+finCol += reflectTex * 0.5;
+
 02083963555
 13686985677
