@@ -1,0 +1,28 @@
+﻿  main.cc
+d:\03_documents\notes\raytracinginoneweekend_project\reference\vec3.h(54): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\vec3.h(133): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\hitable_list.h(20): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\camera.h(17): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\material.h(19): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\material.h(94): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(15): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(27): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(28): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(28): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(41): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(41): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(42): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(44): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(48): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(48): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(51): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(58): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(59): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(74): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(75): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(76): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(77): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(79): warning C4305: “参数”: 从“double”到“float”截断
+d:\03_documents\notes\raytracinginoneweekend_project\reference\main.cc(86): warning C4305: “初始化”: 从“double”到“float”截断
+  Reference.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Reference.exe
+  Reference.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Reference.pdb (Partial PDB)
