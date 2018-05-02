@@ -1,0 +1,4 @@
+﻿  Source.cpp
+d:\03_documents\notes\raytracinginoneweekend_project\comment\source.cpp(64): warning C4305: “参数”: 从“double”到“float”截断
+  Comment.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Comment.exe
+  Comment.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Comment.pdb (Partial PDB)

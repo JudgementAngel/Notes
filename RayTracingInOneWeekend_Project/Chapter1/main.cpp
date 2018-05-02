@@ -7,7 +7,7 @@ int main()
 {
 	int nx = 200,ny = 100;
 
-	ofstream outfile("mytest.txt", ios_base::out);
+	ofstream outfile("Result.ppm", ios_base::out);
 	outfile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	cout << "P3\n" << nx << " " << ny << "\n255\n";

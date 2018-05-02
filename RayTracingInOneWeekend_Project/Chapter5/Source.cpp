@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	int nx = 200;
 	int ny = 100;
 
-	std::ofstream outfile("mytest.txt", std::ios_base::out);
+	std::ofstream outfile("Result.ppm", std::ios_base::out);
 	outfile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	std::cout << "P3\n" << nx << " " << ny << "\n255\n";

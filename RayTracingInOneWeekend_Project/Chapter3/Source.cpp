@@ -6,7 +6,6 @@ vec3 color(const ray& r)
 {
 	vec3 unit_direction = unit_vector(r.direction());
 	float t = 0.5f * (unit_direction.y() + 1.0f);
-	// t = 0.5f * (unit_direction.x() + 1.0f);
 	return (1.0f - t)*vec3(1.0f, 1.0f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
 }
 
@@ -15,7 +14,7 @@ int main(int argc, char* argv[])
 	int nx = 200;
 	int ny = 100;
 
-	std::ofstream outfile("mytest.txt", std::ios_base::out);
+	std::ofstream outfile("Result.ppm", std::ios_base::out);
 	outfile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	std::cout << "P3\n" << nx << " " << ny << "\n255\n";

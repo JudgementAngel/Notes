@@ -16,7 +16,7 @@ vec3 color(const ray& r)
 {
 	// Sphere
 	if (hit_sphere(vec3(0, 0, -1), 0.5f, r))
-		return vec3(1, 0, 0);
+		return vec3(1, 1, 0);
 
 	// Background Color
 	vec3 unit_direction = unit_vector(r.direction());
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	int nx = 200;
 	int ny = 100;
 
-	std::ofstream outfile("mytest.txt", std::ios_base::out);
+	std::ofstream outfile("Result.ppm", std::ios_base::out);
 	outfile << "P3\n" << nx << " " << ny << "\n255\n";
 
 	std::cout << "P3\n" << nx << " " << ny << "\n255\n";
