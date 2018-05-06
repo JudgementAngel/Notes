@@ -38,7 +38,7 @@ int main()
 	int ny = 100;
 	int ns = 100;
 
-	std::ofstream outfile("Chapter5_1.txt", std::ios_base::out);
+	std::ofstream outfile("Result.ppm", std::ios_base::out);
 
 	outfile << "P3\n" << nx << " " << ny << "\n255\n";
 	std::cout << "P3\n" << nx << " " << ny << "\n255\n";
@@ -46,7 +46,7 @@ int main()
 	hitable *list[4];
 	list[0] = new sphere(vec3(0, 0, -1), 0.5,new lambertion(vec3(0.8f,0.3f,0.3f)));
 	list[1] = new sphere(vec3(0, -100.5, -1), 100,new lambertion(vec3(0.8f, 0.3f, 0.0)));
-	list[2] = new sphere(vec3(1,0,-1), 0.5, new metal(vec3(0.8f, 0.6f, 0.2f),0.5f));
+	list[2] = new sphere(vec3(1,0,-1), 0.5, new metal(vec3(0.8f, 0.6f, 0.2f),10.5f));
 	list[3] = new sphere(vec3(-1, 0, -1), 0.5, new metal(vec3(0.8f, 0.8f, 0.8f),0));
 	hitable *world = new hitable_list(list, 4);
 
