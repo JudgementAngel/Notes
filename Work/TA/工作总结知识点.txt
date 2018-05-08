@@ -143,5 +143,9 @@ Unity 中的FBX模型，勾上Import Animation，即使没有动画也会占比较大空间。
 
 Alpha Blend 的Shader最后要进行Saturate ,否则会出现混合错误的情况
 
+SVN 使用注意大小写
+
+处理贴图的WrapMode时，要注意有没有UV在0-1外面的模型，一定要注意到
+
 02083963555
 13686985677
