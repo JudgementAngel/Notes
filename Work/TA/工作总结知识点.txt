@@ -149,5 +149,13 @@ SVN 使用注意大小写
 
 烘焙好后的贴图，有小问题可以通过PS修正
 
+OUT.TtoW0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);  
+OUT.TtoW1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);  
+OUT.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);  
+float3 worldNormal = normalize(half3(dot(IN.TtoW0.xyz, bump), dot(IN.TtoW1.xyz, bump), dot(IN.TtoW2.xyz, bump)));
+尽量避免在片段程序中使用矩阵乘法，在一些手机的GPU上会不支持，如果非要使用就用上面的点积的方法代替矩阵乘法。
+
+
+
 02083963555
 13686985677
