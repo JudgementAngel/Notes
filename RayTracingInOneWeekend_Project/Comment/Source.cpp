@@ -68,8 +68,8 @@ hitable *random_scene()
 
 int main()
 {
-	int nx = 200; // 输出图片宽度（像素）
-	int ny = 100; // 输出图片高度（像素）
+	int nx = 1280; // 输出图片宽度（像素）
+	int ny = 720; // 输出图片高度（像素）
 	int ns = 100; // 用于抗锯齿多重采样的次数
 
 	std::ofstream outfile("Result.ppm", std::ios_base::out); // 输出结果到文件中
