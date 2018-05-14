@@ -157,5 +157,7 @@ float3 worldNormal = normalize(half3(dot(IN.TtoW0.xyz, bump), dot(IN.TtoW1.xyz, 
 
 Unity动画文件更新直接覆盖会出现问题，要先删除再替换，因为删除会替换meta文件，而覆盖会更新meta，有时候更新就会出问题。
 
+如果最终使用RT显示物体，一定要注意不透明物体的Alpha输出，即使你在渲染的摄像机上看是正常的，但是如果RT用AlphaBlend，那就有可能出问题。
+
 02083963555
 13686985677
