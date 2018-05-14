@@ -159,5 +159,7 @@ Unity¶¯»­ÎÄ¼þ¸üÐÂÖ±½Ó¸²¸Ç»á³öÏÖÎÊÌâ£¬ÒªÏÈÉ¾³ýÔÙÌæ»»£¬ÒòÎªÉ¾³ý»áÌæ»»metaÎÄ¼þ£¬¶ø¸
 
 Èç¹û×îÖÕÊ¹ÓÃRTÏÔÊ¾ÎïÌå£¬Ò»¶¨Òª×¢Òâ²»Í¸Ã÷ÎïÌåµÄAlphaÊä³ö£¬¼´Ê¹ÄãÔÚäÖÈ¾µÄÉãÏñ»úÉÏ¿´ÊÇÕý³£µÄ£¬µ«ÊÇÈç¹ûRTÓÃAlphaBlend£¬ÄÇ¾ÍÓÐ¿ÉÄÜ³öÎÊÌâ¡£
 
+ÓÃÓÚºæ±ºµÄ³¡¾°Ä£ÐÍ£¬×îºÃÊ¹ÓÃÐý×ªÀ´¶Ô³Æ¸´ÖÆ£¬ÕâÑù¿ÉÒÔ±£Ö¤TurnÏßÊÇÕýÈ·µÄ¡£ºæ±º³öÏÖÃ÷ÏÔµÄ½Ó·ìÊÇ2ºÅUVµÄÎÊÌâ£¬¿ÉÒÔÍ¨¹ýºÏ²¢UV¶¥µãºÍ´¦ÀíTurnÏßÀ´½â¾ö¡£Èç¹û»¹²»ÐÐ£¬ÄÇ¾ÍÊÖ¶¯Õ¹2UV¡£
+
 02083963555
 13686985677
