@@ -155,7 +155,7 @@ OUT.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
 float3 worldNormal = normalize(half3(dot(IN.TtoW0.xyz, bump), dot(IN.TtoW1.xyz, bump), dot(IN.TtoW2.xyz, bump)));
 尽量避免在片段程序中使用矩阵乘法，在一些手机的GPU上会不支持，如果非要使用就用上面的点积的方法代替矩阵乘法。
 
-
+Unity动画文件更新直接覆盖会出现问题，要先删除再替换，因为删除会替换meta文件，而覆盖会更新meta，有时候更新就会出问题。
 
 02083963555
 13686985677
