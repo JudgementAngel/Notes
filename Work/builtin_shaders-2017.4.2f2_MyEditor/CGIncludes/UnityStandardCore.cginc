@@ -16,16 +16,20 @@
 #include "AutoLight.cginc"
 //-------------------------------------------------------------------------------------
 // counterpart for NormalizePerPixelNormal
+// 对应于 NormalizePerPixelNormal
 // skips normalization per-vertex and expects normalization to happen per-pixel
-half3 NormalizePerVertexNormal (float3 n) // takes float to avoid overflow
+// 跳过在Vertex程序中Normalize，并在Fragment程序中进行
+half3 NormalizePerVertexNormal (float3 n) // takes float to avoid overflow // 采用float 类型避免溢出
 {
     #if (SHADER_TARGET < 30) || UNITY_STANDARD_SIMPLE
         return normalize(n);
     #else
-        return n; // will normalize per-pixel instead
+        return n; // will normalize per-pixel instead 
+        // 这里直接返回将会在Fragment程序中Normalize
     #endif
 }
 
+// 逐像素的Normalize
 float3 NormalizePerPixelNormal (float3 n)
 {
     #if (SHADER_TARGET < 30) || UNITY_STANDARD_SIMPLE
@@ -36,6 +40,7 @@ float3 NormalizePerPixelNormal (float3 n)
 }
 
 //-------------------------------------------------------------------------------------
+// 计算ForwardBase主光源参数
 UnityLight MainLight ()
 {
     UnityLight l;
@@ -45,6 +50,7 @@ UnityLight MainLight ()
     return l;
 }
 
+// 计算ForwardAdd光源参数
 UnityLight AdditiveLight (half3 lightDir, half atten)
 {
     UnityLight l;
@@ -55,11 +61,13 @@ UnityLight AdditiveLight (half3 lightDir, half atten)
         l.dir = NormalizePerPixelNormal(l.dir);
     #endif
 
-    // shadow the light
+    // shadow the light 
+    // 灯光阴影
     l.color *= atten;
     return l;
 }
 
+// 生成一个假设的光源，黑色，从正上方打光
 UnityLight DummyLight ()
 {
     UnityLight l;
@@ -68,6 +76,7 @@ UnityLight DummyLight ()
     return l;
 }
 
+// 返回一个强度为0的间接光照
 UnityIndirect ZeroIndirect ()
 {
     UnityIndirect ind;
@@ -78,14 +87,15 @@ UnityIndirect ZeroIndirect ()
 
 //-------------------------------------------------------------------------------------
 // Common fragment setup
+// 通用的Fragment 数据初始化
 
-// deprecated
+// deprecated // 弃用的
 half3 WorldNormal(half4 tan2world[3])
 {
     return normalize(tan2world[2].xyz);
 }
 
-// deprecated
+// deprecated // 弃用的
 #ifdef _TANGENT_TO_WORLD
     half3x3 ExtractTangentToWorldPerPixel(half4 tan2world[3])
     {
@@ -113,8 +123,11 @@ half3 WorldNormal(half4 tan2world[3])
     }
 #endif
 
+// 逐像素计算世界空间法线
+// @Remark:[tangentToWorld]
 float3 PerPixelWorldNormal(float4 i_tex, float4 tangentToWorld[3])
 {
+// 如果使用法线贴图
 #ifdef _NORMALMAP
     half3 tangent = tangentToWorld[0].xyz;
     half3 binormal = tangentToWorld[1].xyz;
@@ -124,21 +137,30 @@ float3 PerPixelWorldNormal(float4 i_tex, float4 tangentToWorld[3])
         normal = NormalizePerPixelNormal(normal);
 
         // ortho-normalize Tangent
+        // 直角归一切线
         tangent = normalize (tangent - normal * dot(tangent, normal));
 
         // recalculate Binormal
+        // 重计算副法线
         half3 newB = cross(normal, tangent);
         binormal = newB * sign (dot (newB, binormal));
     #endif
 
-    half3 normalTangent = NormalInTangentSpace(i_tex);
-    float3 normalWorld = NormalizePerPixelNormal(tangent * normalTangent.x + binormal * normalTangent.y + normal * normalTangent.z); // @TODO: see if we can squeeze this normalize on SM2.0 as well
+    // 从贴图中得到切空间的法线向量
+    half3 normalTangent = NormalInTangentSpace(i_tex); 
+    // 将切空间的法线转换到世界空间，这里通过切空间基向量乘法实现矩阵变换
+    float3 normalWorld = NormalizePerPixelNormal(tangent * normalTangent.x + binormal * normalTangent.y + normal * normalTangent.z); 
+    // @TODO: see if we can squeeze this normalize on SM2.0 as well
+    // @TODO：看看我们是否可以在SM2.0上优化这个 normalize
 #else
+    // 如果不使用法线贴图，则直接返回T2W的法线基向量
     float3 normalWorld = normalize(tangentToWorld[2].xyz);
 #endif
     return normalWorld;
 }
 
+// 如果使用视差贴图 
+// @Remark:[ParallaxMap]
 #ifdef _PARALLAXMAP
     #define IN_VIEWDIR4PARALLAX(i) NormalizePerPixelNormal(half3(i.tangentToWorldAndPackedData[0].w,i.tangentToWorldAndPackedData[1].w,i.tangentToWorldAndPackedData[2].w))
     #define IN_VIEWDIR4PARALLAX_FWDADD(i) NormalizePerPixelNormal(i.viewDirForParallax.xyz)
