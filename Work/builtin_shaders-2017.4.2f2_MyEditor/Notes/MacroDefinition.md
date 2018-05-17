@@ -7,3 +7,7 @@
 **UNITY_STANDARD_SIMPLE**	判断Standard Shader是否是简单模式的
 
 **UNITY_TANGENT_ORTHONORMALIZE**		是否对切线进行Ortho-Normalize直角归一
+
+**UNITY_REQUIRE_FRAG_WORLDPOS**		是否需要在Fragment 程序中使用World Pos 世界空间中顶点位置
+
+**UNITY_PACK_WORLDPOS_WITH_TANGENT**		是否将World Pos 打包存在Tangent To World 的数组中

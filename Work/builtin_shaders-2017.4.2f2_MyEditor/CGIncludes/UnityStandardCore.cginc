@@ -169,31 +169,41 @@ float3 PerPixelWorldNormal(float4 i_tex, float4 tangentToWorld[3])
     #define IN_VIEWDIR4PARALLAX_FWDADD(i) half3(0,0,0)
 #endif
 
+// 在Fragment程序中是否需要 WorldPos
 #if UNITY_REQUIRE_FRAG_WORLDPOS
+    // 是否将WorldPos 打包存在TangentToWorld的数组中
     #if UNITY_PACK_WORLDPOS_WITH_TANGENT
         #define IN_WORLDPOS(i) half3(i.tangentToWorldAndPackedData[0].w,i.tangentToWorldAndPackedData[1].w,i.tangentToWorldAndPackedData[2].w)
     #else
         #define IN_WORLDPOS(i) i.posWorld
     #endif
+    // @TODO: 在Add中不使用法线吗？
     #define IN_WORLDPOS_FWDADD(i) i.posWorld
 #else
     #define IN_WORLDPOS(i) half3(0,0,0)
     #define IN_WORLDPOS_FWDADD(i) half3(0,0,0)
 #endif
 
+// ForwardAdd中Fragment 程序获取灯光方向
 #define IN_LIGHTDIR_FWDADD(i) half3(i.tangentToWorldAndLightDir[0].w, i.tangentToWorldAndLightDir[1].w, i.tangentToWorldAndLightDir[2].w)
 
+// 初始化ForwardBase中 FragmentCommonData
 #define FRAGMENT_SETUP(x) FragmentCommonData x = \
     FragmentSetup(i.tex, i.eyeVec, IN_VIEWDIR4PARALLAX(i), i.tangentToWorldAndPackedData, IN_WORLDPOS(i));
 
+// 初始化ForwardAdd 中 FragmentCommonData
 #define FRAGMENT_SETUP_FWDADD(x) FragmentCommonData x = \
     FragmentSetup(i.tex, i.eyeVec, IN_VIEWDIR4PARALLAX_FWDADD(i), i.tangentToWorldAndLightDir, IN_WORLDPOS_FWDADD(i));
 
+// 用于存放Fragment中需要使用的一些通用数据的结构体
 struct FragmentCommonData
 {
     half3 diffColor, specColor;
     // Note: smoothness & oneMinusReflectivity for optimization purposes, mostly for DX9 SM2.0 level.
+    // 注意：使用 smoothness 和 oneMinusReflectivity 是出于优化的目的，尤其是针对 DX9 SM2.0 的等级。
     // Most of the math is being done on these (1-x) values, and that saves a few precious ALU slots.
+    // 大多数的数学运算都是使用这些(1-x)的值，这样就能节省一些ALU（逻辑运算单元）的资源。
+    // @Remark:[smoothness&oneMinusReflectivity]
     half oneMinusReflectivity, smoothness;
     float3 normalWorld;
     float3 eyeVec;
@@ -201,18 +211,23 @@ struct FragmentCommonData
     float3 posWorld;
 
 #if UNITY_STANDARD_SIMPLE
+    // @TODO
     half3 reflUVW;
 #endif
 
 #if UNITY_STANDARD_SIMPLE
+    // 切空间法线 // @Remark [tangentSpaceNormal]
     half3 tangentSpaceNormal;
 #endif
 };
 
+// 定义BRDF的输入模式，有 SpecularSetup RoughnessSetup MetallicSetup 三种
 #ifndef UNITY_SETUP_BRDF_INPUT
     #define UNITY_SETUP_BRDF_INPUT SpecularSetup
 #endif
 
+// Specular 高光流输入模式 获取 FragmentCommonData
+// @Remark [SpecularSetup]
 inline FragmentCommonData SpecularSetup (float4 i_tex)
 {
     half4 specGloss = SpecularGloss(i_tex.xy);

@@ -14,3 +14,41 @@
 
 ​	**TODO**
 
+
+
+**[smoothness&oneMinusReflectivity]**
+
+​	smoothness 就是通常所说的 gloss，也就是 1-roughness 。
+
+​	oneMinusReflectivity 是 1 - 反射率。在很多地方(例如：BRDF Fresnel项 的计算)都要使用这个数值，所以提前计算出来可以避免后面重复计算。
+
+​	反射率是物质的一个物理属性，表示在物体表面反射中，反射波与入射波功率的比值。
+
+​	为什么要用 1-x ?以及具体怎么计算？以及为什么要取最大值？
+
+​	**TODO**
+
+
+
+**[tangentSpaceNormal]**
+
+​	当使用简单版的Standard Shader时，使用切空间法线，这样的法线直接就是从贴图中采样出来再Unpack 之后的，不用对法线做矩阵变换，是效率比较高的，但是这样就需要从Vertex程序中传入切空间的Light Dir 和 View Dir 。
+
+
+
+**[FresnelEquation]**
+
+​	Fresnel Equation 菲涅尔方程 是 Maxwell's equations 麦克斯韦方程组 在折射率不同的两个物质间有一个无限大且绝对光滑的交界面这种情况下的解。 
+
+​	F0 指的是 Fresnel 方程在法线和视线夹角为 0 的值。
+
+​	菲涅尔的schlick 近似方程 @DOING
+
+
+
+**[SpecularSetup]**
+
+​	Unity 的 SpecularSetup 指的是 PBR 中的 **镜面反射/光泽度工作流程** 。
+
+​	在这一工作流程中，金属的反射率以及金属的F0 
+
