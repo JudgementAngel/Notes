@@ -230,11 +230,14 @@ struct FragmentCommonData
 // @Remark [SpecularSetup]
 inline FragmentCommonData SpecularSetup (float4 i_tex)
 {
-    half4 specGloss = SpecularGloss(i_tex.xy);
+    // 获取反射率和光泽度
+    half4 specGloss = SpecularGloss(i_tex.xy); 
     half3 specColor = specGloss.rgb;
     half smoothness = specGloss.a;
 
+    // 根据反射率和光泽度 获取 diffColor 漫反射颜色 
     half oneMinusReflectivity;
+    // @Remark:[EnergyConservationBetweenDiffuseAndSpecular]
     half3 diffColor = EnergyConservationBetweenDiffuseAndSpecular (Albedo(i_tex), specColor, /*out*/ oneMinusReflectivity);
 
     FragmentCommonData o = (FragmentCommonData)0;
