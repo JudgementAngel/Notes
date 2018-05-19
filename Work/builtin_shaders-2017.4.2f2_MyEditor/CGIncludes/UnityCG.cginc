@@ -16,16 +16,17 @@
 #include "UnityShaderUtilities.cginc"
 #include "UnityInstancing.cginc"
 
-#ifdef UNITY_COLORSPACE_GAMMA
+// 根据颜色空间设置一些常量
+#ifdef UNITY_COLORSPACE_GAMMA // Gamma 空间
 #define unity_ColorSpaceGrey fixed4(0.5, 0.5, 0.5, 0.5)
 #define unity_ColorSpaceDouble fixed4(2.0, 2.0, 2.0, 2.0)
 #define unity_ColorSpaceDielectricSpec half4(0.220916301, 0.220916301, 0.220916301, 1.0 - 0.220916301)
-#define unity_ColorSpaceLuminance half4(0.22, 0.707, 0.071, 0.0) // Legacy: alpha is set to 0.0 to specify gamma mode
-#else // Linear values
+#define unity_ColorSpaceLuminance half4(0.22, 0.707, 0.071, 0.0) // Legacy: alpha is set to 0.0 to specify gamma mode // 传统：Alpha 设置为 0 指定为Gamma 模式
+#else // Linear values // 线性空间数值
 #define unity_ColorSpaceGrey fixed4(0.214041144, 0.214041144, 0.214041144, 0.5)
 #define unity_ColorSpaceDouble fixed4(4.59479380, 4.59479380, 4.59479380, 2.0)
-#define unity_ColorSpaceDielectricSpec half4(0.04, 0.04, 0.04, 1.0 - 0.04) // standard dielectric reflectivity coef at incident angle (= 4%)
-#define unity_ColorSpaceLuminance half4(0.0396819152, 0.458021790, 0.00609653955, 1.0) // Legacy: alpha is set to 1.0 to specify linear mode
+#define unity_ColorSpaceDielectricSpec half4(0.04, 0.04, 0.04, 1.0 - 0.04) // standard dielectric reflectivity coef at incident angle (= 4%) // 在入射角度标准的介电反射系数 为 4%
+#define unity_ColorSpaceLuminance half4(0.0396819152, 0.458021790, 0.00609653955, 1.0) // Legacy: alpha is set to 1.0 to specify linear mode // 传统：Alpha 设置为 1 指定为Linear 模式
 #endif
 
 // -------------------------------------------------------------------

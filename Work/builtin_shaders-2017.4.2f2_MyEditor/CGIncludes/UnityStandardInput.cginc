@@ -82,6 +82,7 @@ half DetailMask(float2 uv)
     return tex2D (_DetailMask, uv).a;
 }
 
+// 生成Albedo 反照率 贴图，处理细节混合的问题
 half3 Albedo(float4 texcoords)
 {
     half3 albedo = _Color.rgb * tex2D (_MainTex, texcoords.xy).rgb;
@@ -128,6 +129,7 @@ half Occlusion(float2 uv)
 #endif
 }
 
+// SpecularSetup 中根据不同情况获取 Specular 和 Gloss
 half4 SpecularGloss(float2 uv)
 {
     half4 sg;
@@ -150,6 +152,7 @@ half4 SpecularGloss(float2 uv)
     return sg;
 }
 
+// MetallicSetup 中 根据不同的情况 获取 Metallic 和 Gloss
 half2 MetallicGloss(float2 uv)
 {
     half2 mg;
@@ -173,6 +176,7 @@ half2 MetallicGloss(float2 uv)
     return mg;
 }
 
+// RoughnessSetup 中根据不同情况获取 Metallic 和 Gloss 
 half2 MetallicRough(float2 uv)
 {
     half2 mg;

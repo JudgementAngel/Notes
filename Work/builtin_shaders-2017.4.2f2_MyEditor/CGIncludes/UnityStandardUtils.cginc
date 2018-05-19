@@ -20,6 +20,8 @@ half SpecularStrength(half3 specular)
 }
 
 // Diffuse/Spec Energy conservation
+// Diffuse/Spec 能量守恒
+// @Remark:[EnergyConservationBetweenDiffuseAndSpecular]
 inline half3 EnergyConservationBetweenDiffuseAndSpecular (half3 albedo, half3 specColor, out half oneMinusReflectivity)
 {
     oneMinusReflectivity = 1 - SpecularStrength(specColor);
@@ -32,21 +34,29 @@ inline half3 EnergyConservationBetweenDiffuseAndSpecular (half3 albedo, half3 sp
     #endif
 }
 
+// 根据Metallic 计算 oneMinusReflectivity
+// @Remark:[OneMinusReflectivityFromMetallic]
 inline half OneMinusReflectivityFromMetallic(half metallic)
 {
+    // 简化推导：
     // We'll need oneMinusReflectivity, so
+    // 我们 oneMinusReflectivity，所以：
     //   1-reflectivity = 1-lerp(dielectricSpec, 1, metallic) = lerp(1-dielectricSpec, 0, metallic)
     // store (1-dielectricSpec) in unity_ColorSpaceDielectricSpec.a, then
+    // 存储 (1-dielectricSpec) 在 unity_ColorSpaceDielectricSpec.a 中，因此：
     //   1-reflectivity = lerp(alpha, 0, metallic) = alpha + metallic*(0 - alpha) =
     //                  = alpha - metallic * alpha
     half oneMinusDielectricSpec = unity_ColorSpaceDielectricSpec.a;
     return oneMinusDielectricSpec - metallic * oneMinusDielectricSpec;
 }
 
+// 根据metallic 和 albedo 计算Diffuse 和 Specular
 inline half3 DiffuseAndSpecularFromMetallic (half3 albedo, half metallic, out half3 specColor, out half oneMinusReflectivity)
 {
     specColor = lerp (unity_ColorSpaceDielectricSpec.rgb, albedo, metallic);
     oneMinusReflectivity = OneMinusReflectivityFromMetallic(metallic);
+
+    // @TODO 这里为什么要用albedo * oneMinusReflectivity ，而不是用 albedo*(1-Metallic)，是为了能量守恒吗？
     return albedo * oneMinusReflectivity;
 }
 

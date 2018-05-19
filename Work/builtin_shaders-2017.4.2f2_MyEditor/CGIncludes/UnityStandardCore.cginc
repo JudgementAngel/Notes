@@ -226,7 +226,7 @@ struct FragmentCommonData
     #define UNITY_SETUP_BRDF_INPUT SpecularSetup
 #endif
 
-// Specular 高光流输入模式 获取 FragmentCommonData
+// Specular/Smoothness 镜面反射/光泽度 工作流输入模式 获取 FragmentCommonData
 // @Remark [SpecularSetup]
 inline FragmentCommonData SpecularSetup (float4 i_tex)
 {
@@ -235,9 +235,8 @@ inline FragmentCommonData SpecularSetup (float4 i_tex)
     half3 specColor = specGloss.rgb;
     half smoothness = specGloss.a;
 
-    // 根据反射率和光泽度 获取 diffColor 漫反射颜色 
+    // 根据反射率、光泽度以及相关贴图 获取 diffColor 漫反射颜色 和 oneMinusReflectivity
     half oneMinusReflectivity;
-    // @Remark:[EnergyConservationBetweenDiffuseAndSpecular]
     half3 diffColor = EnergyConservationBetweenDiffuseAndSpecular (Albedo(i_tex), specColor, /*out*/ oneMinusReflectivity);
 
     FragmentCommonData o = (FragmentCommonData)0;
@@ -245,15 +244,20 @@ inline FragmentCommonData SpecularSetup (float4 i_tex)
     o.specColor = specColor;
     o.oneMinusReflectivity = oneMinusReflectivity;
     o.smoothness = smoothness;
+
     return o;
 }
 
+// Metallic/Roughness 金属/粗糙度 工作流输入模式 获取 FragmentCommonData
+// @Remark [RoughnessSetup]
 inline FragmentCommonData RoughnessSetup(float4 i_tex)
 {
+    // 获取金属度和光泽度
     half2 metallicGloss = MetallicRough(i_tex.xy);
     half metallic = metallicGloss.x;
-    half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
+    half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m. // 这是1减真实粗糙度m的平方根 // @TODO Why?
 
+    // 根据金属度和相关贴图获取 diffColor 漫反射颜色 specColor 镜面反射颜色 和 oneMinusReflectivity
     half oneMinusReflectivity;
     half3 specColor;
     half3 diffColor = DiffuseAndSpecularFromMetallic(Albedo(i_tex), metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
@@ -266,12 +270,15 @@ inline FragmentCommonData RoughnessSetup(float4 i_tex)
     return o;
 }
 
+// Metallic/Glossness 金属/光泽度 工作流输入模式 获取 FragmentCommonData
+// @Remark [MetallicSetup]
 inline FragmentCommonData MetallicSetup (float4 i_tex)
 {
     half2 metallicGloss = MetallicGloss(i_tex.xy);
     half metallic = metallicGloss.x;
-    half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
+    half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m. // 这是1减真实粗糙度m的平方根 // @TODO Why?
 
+    // 根据金属度和相关贴图获取 diffColor 漫反射颜色 specColor 镜面反射颜色 和 oneMinusReflectivity
     half oneMinusReflectivity;
     half3 specColor;
     half3 diffColor = DiffuseAndSpecularFromMetallic (Albedo(i_tex), metallic, /*out*/ specColor, /*out*/ oneMinusReflectivity);
@@ -285,6 +292,7 @@ inline FragmentCommonData MetallicSetup (float4 i_tex)
 }
 
 // parallax transformed texcoord is used to sample occlusion
+// 视差转换坐标，用于采样遮蔽 @DOING
 inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
 {
     i_tex = Parallax(i_tex, i_viewDirForParallax);
