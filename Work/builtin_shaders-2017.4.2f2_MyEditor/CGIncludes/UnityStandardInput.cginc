@@ -232,6 +232,7 @@ float4 Parallax (float4 texcoords, half3 viewDir)
 {
 #if !defined(_PARALLAXMAP) || (SHADER_TARGET < 30)
     // Disable parallax on pre-SM3.0 shader target models
+    // 禁用SM3.0之前的着色器目标模型上的视差
     return texcoords;
 #else
     half h = tex2D (_ParallaxMap, texcoords.xy).g;

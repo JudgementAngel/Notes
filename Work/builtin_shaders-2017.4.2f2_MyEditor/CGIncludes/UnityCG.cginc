@@ -464,6 +464,7 @@ inline fixed4 VertexLight( v2f_vertex_lit i, sampler2D mainTex )
 
 
 // Calculates UV offset for parallax bump mapping
+// 计算视差凹凸贴图的UV偏移量
 inline float2 ParallaxOffset( half h, half height, half3 viewDir )
 {
     h = h * height - height/2.0;

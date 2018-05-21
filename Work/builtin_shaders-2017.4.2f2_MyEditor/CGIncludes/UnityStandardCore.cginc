@@ -292,7 +292,7 @@ inline FragmentCommonData MetallicSetup (float4 i_tex)
 }
 
 // parallax transformed texcoord is used to sample occlusion
-// 视差转换坐标，用于采样遮蔽 @DOING
+// 视差转换坐标，用于采样遮蔽 
 inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
 {
     i_tex = Parallax(i_tex, i_viewDirForParallax);

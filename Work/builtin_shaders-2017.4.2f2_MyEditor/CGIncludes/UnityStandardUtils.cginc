@@ -87,6 +87,7 @@ inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflect
 
 // Same as ParallaxOffset in Unity CG, except:
 //  *) precision - half instead of float
+// 
 half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 {
     h = h * height - height/2.0;
