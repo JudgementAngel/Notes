@@ -162,6 +162,7 @@ float3 PerPixelWorldNormal(float4 i_tex, float4 tangentToWorld[3])
 // 如果使用视差贴图 
 // @Remark:[ParallaxMap]
 #ifdef _PARALLAXMAP
+    // 使用视差贴图，将切空间的viewDir打包存放在 Tangent To World的四维数组里
     #define IN_VIEWDIR4PARALLAX(i) NormalizePerPixelNormal(half3(i.tangentToWorldAndPackedData[0].w,i.tangentToWorldAndPackedData[1].w,i.tangentToWorldAndPackedData[2].w))
     #define IN_VIEWDIR4PARALLAX_FWDADD(i) NormalizePerPixelNormal(i.viewDirForParallax.xyz)
 #else
@@ -198,17 +199,17 @@ float3 PerPixelWorldNormal(float4 i_tex, float4 tangentToWorld[3])
 // 用于存放Fragment中需要使用的一些通用数据的结构体
 struct FragmentCommonData
 {
-    half3 diffColor, specColor;
+    half3 diffColor, specColor; // 漫反射颜色，高光颜色
     // Note: smoothness & oneMinusReflectivity for optimization purposes, mostly for DX9 SM2.0 level.
     // 注意：使用 smoothness 和 oneMinusReflectivity 是出于优化的目的，尤其是针对 DX9 SM2.0 的等级。
     // Most of the math is being done on these (1-x) values, and that saves a few precious ALU slots.
     // 大多数的数学运算都是使用这些(1-x)的值，这样就能节省一些ALU（逻辑运算单元）的资源。
     // @Remark:[smoothness&oneMinusReflectivity]
-    half oneMinusReflectivity, smoothness;
-    float3 normalWorld;
-    float3 eyeVec;
-    half alpha;
-    float3 posWorld;
+    half oneMinusReflectivity, smoothness; // 简化版1-反射率，光泽度
+    float3 normalWorld; // 世界空间法线
+    float3 eyeVec; // 视向量，从顶点指向摄像机
+    half alpha; // alpha透明度
+    float3 posWorld; // 世界空间顶点位置
 
 #if UNITY_STANDARD_SIMPLE
     // @TODO
@@ -217,7 +218,7 @@ struct FragmentCommonData
 
 #if UNITY_STANDARD_SIMPLE
     // 切空间法线 // @Remark [tangentSpaceNormal]
-    half3 tangentSpaceNormal;
+    half3 tangentSpaceNormal; // 切空间的法线
 #endif
 };
 
@@ -295,19 +296,22 @@ inline FragmentCommonData MetallicSetup (float4 i_tex)
 // 视差转换坐标，用于采样遮蔽 
 inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, half3 i_viewDirForParallax, float4 tangentToWorld[3], float3 i_posWorld)
 {
+    // 计算视差贴图偏移之后的UV坐标
     i_tex = Parallax(i_tex, i_viewDirForParallax);
 
+    // 获取Alpha 以及是否需要使用Alpha进行剔除操作
     half alpha = Alpha(i_tex.xy);
     #if defined(_ALPHATEST_ON)
         clip (alpha - _Cutoff);
     #endif
 
-    FragmentCommonData o = UNITY_SETUP_BRDF_INPUT (i_tex);
-    o.normalWorld = PerPixelWorldNormal(i_tex, tangentToWorld);
-    o.eyeVec = NormalizePerPixelNormal(i_eyeVec);
-    o.posWorld = i_posWorld;
+    FragmentCommonData o = UNITY_SETUP_BRDF_INPUT (i_tex); // 根据三种不同得到输入获取Fragment程序需要用到的通用数据
+    o.normalWorld = PerPixelWorldNormal(i_tex, tangentToWorld); // 根据不同情况获取世界空间的法线
+    o.eyeVec = NormalizePerPixelNormal(i_eyeVec); // 归一化视向量
+    o.posWorld = i_posWorld; // 世界空间顶点位置
 
     // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
+    // 注意：shader 依赖于预乘的alpha 混合 (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
     o.diffColor = PreMultiplyAlpha (o.diffColor, alpha, o.oneMinusReflectivity, /*out*/ o.alpha);
     return o;
 }

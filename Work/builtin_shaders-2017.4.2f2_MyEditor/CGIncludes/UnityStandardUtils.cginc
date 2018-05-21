@@ -56,10 +56,11 @@ inline half3 DiffuseAndSpecularFromMetallic (half3 albedo, half metallic, out ha
     specColor = lerp (unity_ColorSpaceDielectricSpec.rgb, albedo, metallic);
     oneMinusReflectivity = OneMinusReflectivityFromMetallic(metallic);
 
-    // @TODO 这里为什么要用albedo * oneMinusReflectivity ，而不是用 albedo*(1-Metallic)，是为了能量守恒吗？
+    // @TODO 这里要用albedo * oneMinusReflectivity ，而不是用 albedo*(1-Metallic)，个人猜测是为了能量守恒
     return albedo * oneMinusReflectivity;
 }
 
+// DOING
 inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflectivity, out half outModifiedAlpha)
 {
     #if defined(_ALPHAPREMULTIPLY_ON)
@@ -87,13 +88,18 @@ inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflect
 
 // Same as ParallaxOffset in Unity CG, except:
 //  *) precision - half instead of float
-// 
+// 和UnityCG.cginc中的ParallaxOffset 函数类似，除了：
+// v的精度是half 而不是 float
+
+// h 是高度图中的数值[0,1]
+// height是外部输入的数值，表示缩放的大小[0.005, 0.08]
+// viewDir是切空间的实现视向量
 half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 {
-    h = h * height - height/2.0;
-    half3 v = normalize(viewDir);
-    v.z += 0.42;
-    return h * (v.xy / v.z);
+    h = h * height - height/2.0; // 对高度做映射
+    half3 v = normalize(viewDir); // 归一化视向量
+    v.z += 0.42; // 对z做偏移保证不会出现特别小的值或者小于等于0的值
+    return h * (v.xy / v.z); // 计算UV偏移的量
 }
 
 half LerpOneTo(half b, half t)

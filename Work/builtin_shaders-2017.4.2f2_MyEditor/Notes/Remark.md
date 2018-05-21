@@ -10,9 +10,24 @@
 
 
 
-**[ParallaxMap]**
+** [ParallaxMap]**
 
-​	**TODO**
+​	视差贴图是一种用于模拟物体表面凹凸效果的方法，原理是：通过采样一张高度图，对原本贴图采样的UV做偏移，实现在不同角度，某些物体表面被遮挡，增强立体凹凸的效果。
+
+​	具体实现方法是，依据当前位置的高度，UV沿着在切空间归一化后的视线方向的xy平移，越从正上方看，平移得越少，越侧着看，平移得越多。所以用切空间的 xy/z 实现。当前高度对平移量的影响需要做一些调整（一般是缩放和偏移）来适配物体表面。在Unity中的具体实现代码如下（在UnityCG.cginc和UnityStandardUtils.cginc中）：
+
+```C++
+// h 是高度图中的数值[0,1]
+// height是外部输入的数值，表示缩放的大小[0.005, 0.08]
+// viewDir是切空间的实现视向量
+half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
+{
+    h = h * height - height/2.0; // 对高度做映射
+    half3 v = normalize(viewDir); // 归一化视向量
+    v.z += 0.42; // 对z做偏移保证不会出现特别小的值或者小于等于0的值
+    return h * (v.xy / v.z); // 计算UV偏移
+}
+```
 
 
 
