@@ -29,6 +29,8 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 }
 ```
 
+​	参考 ShaderX 3  2.1章 Parallax Mapping
+
 
 
 **[smoothness&oneMinusReflectivity]**

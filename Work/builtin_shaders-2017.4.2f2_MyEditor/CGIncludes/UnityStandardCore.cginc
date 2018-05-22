@@ -311,7 +311,7 @@ inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, ha
     o.posWorld = i_posWorld; // 世界空间顶点位置
 
     // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
-    // 注意：shader 依赖于预乘的alpha 混合 (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
+    // 注意：shader 的 alpha混合模式(_SrcBlend = One, _DstBlend = OneMinusSrcAlpha) 依赖于预乘
     o.diffColor = PreMultiplyAlpha (o.diffColor, alpha, o.oneMinusReflectivity, /*out*/ o.alpha);
     return o;
 }

@@ -60,17 +60,20 @@ inline half3 DiffuseAndSpecularFromMetallic (half3 albedo, half metallic, out ha
     return albedo * oneMinusReflectivity;
 }
 
-// DOING
+// Alpha预乘主要用于 Standard 中特殊的 Transparent 的混合模式
 inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflectivity, out half outModifiedAlpha)
 {
     #if defined(_ALPHAPREMULTIPLY_ON)
         // NOTE: shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
+        // 注意：shader 的 alpha混合模式(_SrcBlend = One, _DstBlend = OneMinusSrcAlpha) 依赖于预乘
 
         // Transparency 'removes' from Diffuse component
+        // 从Diffuse 中 “移除” 透明部分
         diffColor *= alpha;
 
         #if (SHADER_TARGET < 30)
             // SM2.0: instruction count limitation
+            // SM2.0: 指令计数限制
             // Instead will sacrifice part of physically based transparency where amount Reflectivity is affecting Transparency
             // SM2.0: uses unmodified alpha
             outModifiedAlpha = alpha;
