@@ -207,7 +207,7 @@ struct FragmentCommonData
     // @Remark:[smoothness&oneMinusReflectivity]
     half oneMinusReflectivity, smoothness; // 简化版1-反射率，光泽度
     float3 normalWorld; // 世界空间法线
-    float3 eyeVec; // 视向量，从顶点指向摄像机
+    float3 eyeVec; // 视向量，从摄像机指向顶点
     half alpha; // alpha透明度
     float3 posWorld; // 世界空间顶点位置
 
@@ -316,6 +316,7 @@ inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, ha
     return o;
 }
 
+// Unity 中计算全局光照
 inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambientOrLightmapUV, half atten, UnityLight light, bool reflections)
 {
     UnityGIInput d;
@@ -323,6 +324,8 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
     d.worldPos = s.posWorld;
     d.worldViewDir = -s.eyeVec;
     d.atten = atten;
+
+    // 是否使用灯光贴图，使用灯光贴图就不使用环境光
     #if defined(LIGHTMAP_ON) || defined(DYNAMICLIGHTMAP_ON)
         d.ambient = 0;
         d.lightmapUV = i_ambientOrLightmapUV;
@@ -331,11 +334,14 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
         d.lightmapUV = 0;
     #endif
 
+    // @TODO: unity_SpecCube0_HDR unity_SpecCube1_HDR 具体指什么
     d.probeHDR[0] = unity_SpecCube0_HDR;
     d.probeHDR[1] = unity_SpecCube1_HDR;
     #if defined(UNITY_SPECCUBE_BLENDING) || defined(UNITY_SPECCUBE_BOX_PROJECTION)
-      d.boxMin[0] = unity_SpecCube0_BoxMin; // .w holds lerp value for blending
+      d.boxMin[0] = unity_SpecCube0_BoxMin; // .w holds lerp value for blending // w 存储用混合的差值变量
     #endif
+
+    // @TODO
     #ifdef UNITY_SPECCUBE_BOX_PROJECTION
       d.boxMax[0] = unity_SpecCube0_BoxMax;
       d.probePosition[0] = unity_SpecCube0_ProbePosition;
@@ -348,6 +354,7 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
     {
         Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.smoothness, -s.eyeVec, s.normalWorld, s.specColor);
         // Replace the reflUVW if it has been compute in Vertex shader. Note: the compiler will optimize the calcul in UnityGlossyEnvironmentSetup itself
+        // 如果已经在Vertex着色器中计算过，则替换reflUVW。注意，编译器会优化 UnityGlossyEnvironmentSetup 中的计算。
         #if UNITY_STANDARD_SIMPLE
             g.reflUVW = s.reflUVW;
         #endif

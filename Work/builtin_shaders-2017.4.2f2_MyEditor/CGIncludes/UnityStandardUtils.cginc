@@ -61,6 +61,7 @@ inline half3 DiffuseAndSpecularFromMetallic (half3 albedo, half metallic, out ha
 }
 
 // Alpha预乘主要用于 Standard 中特殊的 Transparent 的混合模式
+// @Remarl: [PreMultiplyAlpha]
 inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflectivity, out half outModifiedAlpha)
 {
     #if defined(_ALPHAPREMULTIPLY_ON)
@@ -75,10 +76,13 @@ inline half3 PreMultiplyAlpha (half3 diffColor, half alpha, half oneMinusReflect
             // SM2.0: instruction count limitation
             // SM2.0: 指令计数限制
             // Instead will sacrifice part of physically based transparency where amount Reflectivity is affecting Transparency
+            // 反而会牺牲基于物理的透明度，也就是反射率影响透明度的地方
             // SM2.0: uses unmodified alpha
+            // SM2.0: 使用未修改的透明度
             outModifiedAlpha = alpha;
         #else
             // Reflectivity 'removes' from the rest of components, including Transparency
+            // 将反射率从其他部分中“移除”，包括透明度 // @TODO Why?
             // outAlpha = 1-(1-alpha)*(1-reflectivity) = 1-(oneMinusReflectivity - alpha*oneMinusReflectivity) =
             //          = 1-oneMinusReflectivity + alpha*oneMinusReflectivity
             outModifiedAlpha = 1-oneMinusReflectivity + alpha*oneMinusReflectivity;

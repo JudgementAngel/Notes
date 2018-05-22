@@ -126,3 +126,12 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 ​	Unity中的 MetallicSetup 是，传统的PBR，Metallic/Roughness 金属粗糙度流程的一个变种，Metallic/Glossiness 金属和光泽度工作流，这里 Glossiness = 1 - Roughness ，这里并不推荐这种方法来实现PBR，因为 大部分的软件中都是使用 Metallic /Roughness 和 Specular/Glossiness 两种模式，这样制作的美术资源就能直接用，不用再在PhotoShop 中做处理。
 
 ​	金属度存储在 _MetallicGlossMap.r  或 _Metallic 变量中。光泽度 存储在 _MetallicGlossMap.a 或 _MainTex.a 或 _Glossiness 中。
+
+
+
+**[PreMultiplyAlpha]**
+
+​	用于Unity的 Transparent 参数，适用于像彩色玻璃一样的半透明物体，高光反射不会随透明而消失。 **TODO** 
+
+
+

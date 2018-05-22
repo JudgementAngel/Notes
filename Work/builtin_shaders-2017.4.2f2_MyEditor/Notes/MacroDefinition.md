@@ -11,3 +11,14 @@
 **UNITY_REQUIRE_FRAG_WORLDPOS**		是否需要在Fragment 程序中使用World Pos 世界空间中顶点位置
 
 **UNITY_PACK_WORLDPOS_WITH_TANGENT**		是否将World Pos 打包存在Tangent To World 的数组中
+
+**UNITY_SPECCUBE_BLENDING**		TODO
+
+**UNITY_SPECCUBE_BOX_PROJECTION**		TODO
+
+**UNITY_ENABLE_REFLECTION_BUFFERS**	 	TODO
+
+**LIGHTMAP_ON** 	是否使用灯光贴图
+
+**DYNAMICLIGHTMAP_ON** 	是否使用动态灯光贴图
+
