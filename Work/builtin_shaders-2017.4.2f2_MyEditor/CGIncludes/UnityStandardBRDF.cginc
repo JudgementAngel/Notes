@@ -25,11 +25,13 @@ half RoughnessToPerceptualRoughness(half roughness)
 // Smoothness 是用户面对的名字
 // it should be perceptualSmoothness but we don't want the user to have to deal with this name
 // 它应该是 perceptual Smoothness 感知光泽度 但是我们不希望用户应付这个名字
+// 从 Perceptual Smoothness 获取 Roughness (不是 Perceptual Roughness)
 half SmoothnessToRoughness(half smoothness)
 {
     return (1 - smoothness) * (1 - smoothness);
 }
 
+// 从 Perceptual Smoothness 获取 Perceptual Roughness
 float SmoothnessToPerceptualRoughness(float smoothness)
 {
     return (1 - smoothness);
@@ -58,8 +60,9 @@ inline half4 Pow4 (half4 x)
 }
 
 // Pow5 uses the same amount of instructions as generic pow(), but has 2 advantages:
-// 1) better instruction pipelining
-// 2) no need to worry about NaNs
+// Pow5 和通用的pow()使用相同的指令数，但是有两个优点：
+// 1) better instruction pipelining // 1) 更好的指令流水线
+// 2) no need to worry about NaNs // 2) 不需要担心NaNs(非数元素) ?
 inline half Pow5 (half x)
 {
     return x*x * x*x * x;

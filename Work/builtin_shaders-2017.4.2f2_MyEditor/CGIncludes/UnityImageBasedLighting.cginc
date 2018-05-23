@@ -499,17 +499,20 @@ struct Unity_GlossyEnvironmentData
     // 小心：这是 perceptualRoughness 感知粗糙度但由于兼容性，这个名称不能改变:(
     // @Remark: [PerceptualRoughness&Roughness]
 
+    // reflUVW 是用于采样CubeMap的反射向量，这里使用reflUVW表示它是作为纹理坐标使用的
     half3   reflUVW;
 };
 
 // ----------------------------------------------------------------------------
 
+// 计算Unity_GlossyEnvironmentData 数据
+// 这里传入的fresnel0 并没有用到
 Unity_GlossyEnvironmentData UnityGlossyEnvironmentSetup(half Smoothness, half3 worldViewDir, half3 Normal, half3 fresnel0)
 {
     Unity_GlossyEnvironmentData g;
 
-    g.roughness /* perceptualRoughness */   = SmoothnessToPerceptualRoughness(Smoothness);
-    g.reflUVW   = reflect(-worldViewDir, Normal);
+    g.roughness /* perceptualRoughness  */   = SmoothnessToPerceptualRoughness(Smoothness); // 计算 perceptualRoughness ，出于兼容性原因使用 roughness
+    g.reflUVW   = reflect(-worldViewDir, Normal); // worldViewDir 是顶点指向摄像机的向量（这样为了方便点积计算），但是求反射向量需要使用从摄像机指向顶点的向量
 
     return g;
 }

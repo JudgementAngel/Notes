@@ -4,6 +4,7 @@
 #define UNITY_GLOBAL_ILLUMINATION_INCLUDED
 
 // Functions sampling light environment data (lightmaps, light probes, reflection probes), which is then returned as the UnityGI struct.
+// 功能是 采样环境光的数据 (lightmaps 灯光贴图, light probes 灯光探针, reflection probes 反射探针), 结果会返回 UnityGI 的结构体.
 
 #include "UnityImageBasedLighting.cginc"
 #include "UnityStandardUtils.cginc"
@@ -41,11 +42,12 @@ inline half3 DecodeDirectionalSpecularLightmap (half3 color, half4 dirTex, half3
     return ambient;
 }
 
+// 重置UnityLight 结构体
 inline void ResetUnityLight(out UnityLight outLight)
 {
     outLight.color = half3(0, 0, 0);
-    outLight.dir = half3(0, 1, 0); // Irrelevant direction, just not null
-    outLight.ndotl = 0; // Not used
+    outLight.dir = half3(0, 1, 0); // Irrelevant direction, just not null // 不相干的方向而已，这里只是不能为空
+    outLight.ndotl = 0; // Not used // 不再使用
 }
 
 inline half3 SubtractMainLightWithRealtimeAttenuationFromLightmap (half3 lightmap, half attenuation, half4 bakedColorTex, half3 normalWorld)
@@ -78,20 +80,26 @@ inline half3 SubtractMainLightWithRealtimeAttenuationFromLightmap (half3 lightma
     return min(lightmap, realtimeShadow);
 }
 
+// 重置UnityGI结构体中的数据
 inline void ResetUnityGI(out UnityGI outGI)
 {
-    ResetUnityLight(outGI.light);
+    ResetUnityLight(outGI.light); // 重置UnitLight 
+
+    // 重置间接光照
     outGI.indirect.diffuse = 0;
     outGI.indirect.specular = 0;
 }
 
+// 计算基础GI的函数
 inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld)
 {
     UnityGI o_gi;
-    ResetUnityGI(o_gi);
+    ResetUnityGI(o_gi); // 重置UnityGI
 
     // Base pass with Lightmap support is responsible for handling ShadowMask / blending here for performance reason
-    #if defined(HANDLE_SHADOWS_BLENDING_IN_GI)
+    // 出于性能的原因，支持Lightmap的基础Pass 负责在这里 处理ShadowMask 或 混合。
+    // @Remark: [HANDLE_SHADOWS_BLENDING_IN_GI]
+    #if defined(HANDLE_SHADOWS_BLENDING_IN_GI) // @TODO
         half bakedAtten = UnitySampleBakedOcclusion(data.lightmapUV.xy, data.worldPos);
         float zDist = dot(_WorldSpaceCameraPos - data.worldPos, UNITY_MATRIX_V[2].xyz);
         float fadeDist = UnityComputeShadowFadeDistance(data.worldPos, zDist);
@@ -99,8 +107,10 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
     #endif
 
     o_gi.light = data.light;
-    o_gi.light.color *= data.atten;
+    o_gi.light.color *= data.atten; // 灯光做衰减
 
+    // 计算球谐光照
+    // @Remark: [SphericalHarmonic] // DOING
     #if UNITY_SHOULD_SAMPLE_SH
         o_gi.indirect.diffuse = ShadeSHPerPixel(normalWorld, data.ambient, data.worldPos);
     #endif
@@ -188,26 +198,30 @@ inline half3 UnityGI_IndirectSpecular(UnityGIInput data, half occlusion, Unity_G
 }
 
 // Deprecated old prototype but can't be move to Deprecated.cginc file due to order dependency
+// 弃用的旧原型，但是由于顺序依赖性的原因，不能移动到 Deprecated.cginc
 inline half3 UnityGI_IndirectSpecular(UnityGIInput data, half occlusion, half3 normalWorld, Unity_GlossyEnvironmentData glossIn)
 {
     // normalWorld is not used
     return UnityGI_IndirectSpecular(data, occlusion, glossIn);
 }
 
+// 简单版本的Standard使用这个函数
 inline UnityGI UnityGlobalIllumination (UnityGIInput data, half occlusion, half3 normalWorld)
 {
-    return UnityGI_Base(data, occlusion, normalWorld);
+    return UnityGI_Base(data, occlusion, normalWorld); // 计算基础的GI并直接返回
 }
 
+// 添加环境光对GI间接光Specular项的影响 
 inline UnityGI UnityGlobalIllumination (UnityGIInput data, half occlusion, half3 normalWorld, Unity_GlossyEnvironmentData glossIn)
 {
-    UnityGI o_gi = UnityGI_Base(data, occlusion, normalWorld);
-    o_gi.indirect.specular = UnityGI_IndirectSpecular(data, occlusion, glossIn);
+    UnityGI o_gi = UnityGI_Base(data, occlusion, normalWorld); // 计算基础的GI
+    o_gi.indirect.specular = UnityGI_IndirectSpecular(data, occlusion, glossIn); // 单独处理计算间接光specular项
     return o_gi;
 }
 
 //
 // Old UnityGlobalIllumination signatures. Kept only for backward compatibility and will be removed soon
+// 旧的 UnityGlobalIllumination 函数签名。保留只为了向下兼容，并且很快会被移除
 //
 
 inline UnityGI UnityGlobalIllumination (UnityGIInput data, half occlusion, half smoothness, half3 normalWorld, bool reflections)

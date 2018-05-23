@@ -1,6 +1,66 @@
-### Remark
+#Remark
 
-**[tangentToWorld]**	
+###[RenderingPipline]
+
+####Forward Rendering :
+
+​	https://docs.unity3d.com/Manual/RenderTech-ForwardRendering.html
+
+​	在 Forward Rendering 正向渲染 中根据影响对象的光线渲染每个对象一次或多次。灯光本身也通过正向渲染得到不同的处理，具体取决于它们的设置和强度。
+
+​	在Forward Rendering 中，影响每个对象的某些数目的最亮灯将完全逐像素计算。每个顶点最多计算4个点光源。其他灯光被计算为球面谐波（SH），虽然效率更高，但只是一个近似值。
+
+​	一个灯光无论是否逐像素计算，都依赖下面的条件：
+
+​	*Render Mode 设置为“Not Important” 的灯光始终为顶点光照 或 SH ;*
+
+​	*最亮的方向光始终是逐像素计算的 ;*
+
+​	*Render Mode 设置为 "Important" 的灯光始终为逐像素计算 ;*
+
+​	*如果上面筛选出来的逐像素灯光数量 少于 Quality Setting 里的 “Pixel Light Count” ，则按照灯光亮度降低的顺序逐像素渲染 ;*  
+
+​	渲染每一个对象遵循下面原则：
+
+​	*ForwardBase Pass 计算一个最主要的逐像素灯光和所有的逐顶点计算的光照/SH灯光；*
+
+​	其他的逐像素光照计算在 Additional Pass 中，一个Pass 计算一次灯光。
+
+​	例如：如果某些物体受到多个灯光的影响（下图中的圆圈，受灯光A到H的影响）
+
+​	![](Images\ForwardLightsExample.png)
+
+​	假设A到H具有相同的颜色和强度，并且它们都是设置自动渲染的模式，因此它们的渲染顺序将按照对物体的影响程度排序。最亮的灯光将逐像素计算(A-D)，之后有四个灯光逐顶点计算(D-G)，剩下的灯光将使用 SH 球谐照明(G-H) 。
+
+​	![](Images\ForwardLightsClassify.png)
+
+​	注意：灯光组重叠的情况。例如：最后一个逐像素的光照会和逐顶点的光照模式混合，这样当物体发生移动的时候，就不会出现 “灯光爆裂” 的情况。
+
+##### Base Pass
+
+​	Base Pass 渲染物体，一个最重要的方向光合SH/顶点光照。这个Pass还添加了Shader中用到的所有 lightmaps 灯光贴图、ambient环境光 和 emissive 自发光。在这个过程中方向光可以产生阴影。注意：lightmap static 的物体不会受到SH的全局光照。
+
+​	如果在着色器中使用“Only Directional”的 Pass Flag 时: Tags{"PassFlags" = "OnlyDirectional"} 。 Forward Base Pass 仅渲染主要的方向光，ambient 环境光/lightprobe 灯光探针 和 lightmap 灯光贴图（SH和顶点光源不包含在Pass数据中）（这个并不是很常用，至少Unity自己的Shader案例中从来没有用）。
+
+##### Additional Passes
+
+​	Additional passes 用于渲染每个附加的逐像素计算的灯光。默认情况下，这些通道中的灯不具有阴影（因此从结果上看，“Forward Rendering”支持带阴影的一个方向光），除非使用 [multi_compile_fwdadd_fullshadows](https://docs.unity3d.com/Manual/SL-MultipleProgramVariants.html)  这个变种。
+
+####Performance Considerations 性能考虑
+
+​	Spherical Harmonics 球面谐波光照的渲染是非常快的。CPU上的消耗非常低，实际上在GPU上是免费使用的（因为，在Base Pass中总是计算SH照明；而且由于SH灯光的工作方式，无论有多少SH灯，在那里的成本都是一样的）。
+
+​	SH光照的缺点：
+
+​	它们是在对象的顶点计算的，而不是像素。这意味着他们不支持 Light Cookies 灯光遮罩 或 Normal Maps 法线贴图。
+
+​	SH光照的频率很低，因此不能进行尖锐的照明转换。它们也仅影响漫反射照明（对于镜面高光来说频率太低）。
+
+​	SH照明不是局部照明。靠近SH类型的点光源或者聚光灯的一些表面将会“看起来不正确”。	
+
+
+
+###[tangentToWorld]	
 
 ​	Unity 中使用的float4 tangentToWorld[3] 是以该数组的用途来命名的，而非矩阵的含义。实际上如果将这个数组转化为3x3矩阵（忽略最后一列变量，通常用于存放World Pos），这是一个World Space 到 Tangent Space 的变换矩阵。该矩阵是由World Space Tangent 、World Space  Binormal、World Space Normal 三个向量构造的，三个向量两两垂直且均Normalize 处理过。
 
@@ -10,7 +70,7 @@
 
 
 
-** [ParallaxMap]**
+###[ParallaxMap]
 
 ​	视差贴图是一种用于模拟物体表面凹凸效果的方法，原理是：通过采样一张高度图，对原本贴图采样的UV做偏移，实现在不同角度，某些物体表面被遮挡，增强立体凹凸的效果。
 
@@ -33,7 +93,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[smoothness&oneMinusReflectivity]**
+###[smoothness&oneMinusReflectivity]
 
 ​	smoothness 就是通常所说的 gloss，也就是 1-roughness 。
 
@@ -49,13 +109,13 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[tangentSpaceNormal]**
+###[tangentSpaceNormal]
 
 ​	当使用简单版的Standard Shader时，使用切空间法线，这样的法线直接就是从贴图中采样出来再Unpack 之后的，不用对法线做矩阵变换，是效率比较高的，但是这样就需要从Vertex程序中传入切空间的Light Dir 和 View Dir 。
 
 
 
-**[FresnelEquation]**
+###[FresnelEquation]
 
 ​	**Fresnel Equation** 菲涅尔方程 是 **Maxwell's equations** 麦克斯韦方程组 在折射率不同的两个物质间有一个无限大且绝对光滑的交界面这种情况下的解。 
 
@@ -73,7 +133,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
  
 
-**[SpecularSetup]**
+###[SpecularSetup]
 
 ​	Unity 的 SpecularSetup 指的是 PBR 中的 **Specular/Glossines 镜面反射/光泽度工作流程** 。
 
@@ -85,7 +145,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[EnergyConservationBetweenDiffuseAndSpecular]**
+###[EnergyConservationBetweenDiffuseAndSpecular]
 
 ​	PBR的原则之一：Energy Conservation 能量守恒，即 出射光的能量 <= 入射光的能量。而使用 Specular / Gloss 因为可以控制非金属的F0值，很容易出现能量不守恒的情况，例如：白色（1.0）的漫反射值与白色（1.0）的镜面反射值相组合，得到的反射/折射光的总量会大于接收到的，结果就会打破能量守恒原则。这意味着，你做出来的贴图可能不会得到正确的渲染结果。
 
@@ -93,7 +153,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[RoughnessSetup]**
+###[RoughnessSetup]
 
 ​	Unity 中的 RoughnessSetup 指的是 PBR 中的 **Metallic/Roughness 金属度/粗糙度工作流程** 。
 
@@ -107,7 +167,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[OneMinusReflectivityFromMetallic]**
+###[OneMinusReflectivityFromMetallic]
 
 ​	从金属度中获取1-反射率的值，这里Unity使用了一个小技巧：
 
@@ -121,7 +181,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[MetallicSetup]**
+###[MetallicSetup]
 
 ​	Unity中的 MetallicSetup 是，传统的PBR，Metallic/Roughness 金属粗糙度流程的一个变种，Metallic/Glossiness 金属和光泽度工作流，这里 Glossiness = 1 - Roughness ，这里并不推荐这种方法来实现PBR，因为 大部分的软件中都是使用 Metallic /Roughness 和 Specular/Glossiness 两种模式，这样制作的美术资源就能直接用，不用再在PhotoShop 中做处理。
 
@@ -129,13 +189,13 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
-**[PreMultiplyAlpha]**
+###[PreMultiplyAlpha]
 
 ​	用于Unity的 Transparent 参数，适用于像彩色玻璃一样的半透明物体，高光反射不会随透明而消失。 **TODO** 
 
 
 
-**[PerceptualRoughness&Roughness]**
+###[PerceptualRoughness&Roughness]
 
 ​	Perceptual Roughness 感知粗糙度 和 Roughness 粗糙度，感知粗糙度和感知光泽度都是为了方便艺术家制作的参数，他们并不是真正的GGX BRDF 中使用的Roughness ，它们之间的关系是：
 
@@ -147,8 +207,31 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 ​	迪士尼“原则性”BRDF的高光部分是GGX BRDF。 它使用Roughness参数。 这种Roughness 是“Disney roughness ”，而不是真正的GGX Roughness。 Disney roughness = sqrt(Roughness)。 在运行时使用时，Disney Roughness 会转变为的GGX粗糙度。Roughness = Disney Roughness * Disney Roughness 
 
-​	Unity中也使用这种方式计算。 
+​	Unity、Unreal 等引擎的BRDF都使用这种方式计算。 
 
 ​	参考： UnityStandardBRDF.cginc 
 
 ​	https://seblagarde.wordpress.com/2014/04/14/dontnod-physically-based-rendering-chart-for-unreal-engine-4/
+
+​	@TODO Substance Painter中输出到贴图中的是 PerceptualRoughness 还是Roughness ？是否跟贴图存储的颜色空间有关系？
+
+
+
+###[sRGB]
+
+​	sRGB采样 允许 Unity Editor 在纹理处在Gamma颜色空间时，在Linear 空间中渲染时使用。当您选择在线性色彩空间中工作时，编辑器默认使用sRGB采样。
+
+​	 也就是说：如果你当前项目的颜色空间是Linear ，你要使用Gamma空间的纹理贴图，则纹理贴图就需要勾选sRGB，如果是使用Linear Space 的贴图，就不要勾选。
+
+​	如果你当前项目的颜色空间是Gamma，那么勾不勾选 sRGB 对结果并没有影响。
+
+
+
+###[HANDLE_SHADOWS_BLENDING_IN_GI]
+
+​	**TODO** ： GI中的Shadow是怎么生成的，怎么应用到GI中的？
+
+
+
+###[SphericalHarmonic]
+

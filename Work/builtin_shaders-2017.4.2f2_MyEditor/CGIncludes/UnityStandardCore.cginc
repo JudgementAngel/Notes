@@ -352,7 +352,8 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
 
     if(reflections)
     {
-        Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.smoothness, -s.eyeVec, s.normalWorld, s.specColor);
+        Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.smoothness, -s.eyeVec, s.normalWorld, s.specColor); // 计算Unity_GlossyEnvironmentData数据
+        
         // Replace the reflUVW if it has been compute in Vertex shader. Note: the compiler will optimize the calcul in UnityGlossyEnvironmentSetup itself
         // 如果已经在Vertex着色器中计算过，则替换reflUVW。注意，编译器会优化 UnityGlossyEnvironmentSetup 中的计算。
         #if UNITY_STANDARD_SIMPLE

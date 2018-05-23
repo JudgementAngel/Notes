@@ -22,3 +22,6 @@
 
 **DYNAMICLIGHTMAP_ON** 	是否使用动态灯光贴图
 
+**HANDLE_SHADOWS_BLENDING_IN_GI**		是否在GI中混合阴影
+
+**UNITY_SHOULD_SAMPLE_SH** 		是否应该采样球谐光照
