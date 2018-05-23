@@ -22,7 +22,9 @@ half RoughnessToPerceptualRoughness(half roughness)
 }
 
 // Smoothness is the user facing name
+// Smoothness 是用户面对的名字
 // it should be perceptualSmoothness but we don't want the user to have to deal with this name
+// 它应该是 perceptual Smoothness 感知光泽度 但是我们不希望用户应付这个名字
 half SmoothnessToRoughness(half smoothness)
 {
     return (1 - smoothness) * (1 - smoothness);

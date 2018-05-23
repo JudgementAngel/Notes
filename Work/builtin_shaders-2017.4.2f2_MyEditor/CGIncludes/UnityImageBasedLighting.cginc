@@ -483,14 +483,22 @@ float4 IntegrateLD( UNITY_ARGS_TEXCUBE(tex),
 
 // ----------------------------------------------------------------------------
 // GlossyEnvironment - Function to integrate the specular lighting with default sky or reflection probes
+// GlossyEnvironment - 功能是将镜面反射与默认的天空盒或反射探针集成在一起
 // ----------------------------------------------------------------------------
 struct Unity_GlossyEnvironmentData
 {
     // - Deferred case have one cubemap
+    // - Deferred 的情况只有一个cubemao
     // - Forward case can have two blended cubemap (unusual should be deprecated).
+    // - Forward的情况有两个混合的cubemap (不寻常应该被弃用)
 
     // Surface properties use for cubemap integration
-    half    roughness; // CAUTION: This is perceptualRoughness but because of compatibility this name can't be change :(
+    // 表面属性用于对cubemap积分
+    half    roughness; 
+    // CAUTION: This is perceptualRoughness but because of compatibility this name can't be change :(
+    // 小心：这是 perceptualRoughness 感知粗糙度但由于兼容性，这个名称不能改变:(
+    // @Remark: [PerceptualRoughness&Roughness]
+
     half3   reflUVW;
 };
 

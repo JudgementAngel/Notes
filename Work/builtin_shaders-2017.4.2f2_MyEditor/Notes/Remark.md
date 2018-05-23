@@ -135,3 +135,20 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 
 
+**[PerceptualRoughness&Roughness]**
+
+​	Perceptual Roughness 感知粗糙度 和 Roughness 粗糙度，感知粗糙度和感知光泽度都是为了方便艺术家制作的参数，他们并不是真正的GGX BRDF 中使用的Roughness ，它们之间的关系是：
+
+​	Roughness = PerceptualRoughness * PerceptualRoughness;
+
+​	Smoothness = 1 - (1- PerceptualSmoothness)*(1- PerceptualSmoothness);
+
+​	The specular part of Disney “principled” BRDF is a GGX BRDF. It use a roughness parameter. This roughness is the “Disney roughness”, not the real GGX roughness. Disney Roughness = sqrt(Roughness). When use at runtime this Disney Roughness is transform to the GGX roughness with roughness = Disney Roughness * Disney Roughness.
+
+​	迪士尼“原则性”BRDF的高光部分是GGX BRDF。 它使用Roughness参数。 这种Roughness 是“Disney roughness ”，而不是真正的GGX Roughness。 Disney roughness = sqrt(Roughness)。 在运行时使用时，Disney Roughness 会转变为的GGX粗糙度。Roughness = Disney Roughness * Disney Roughness 
+
+​	Unity中也使用这种方式计算。 
+
+​	参考： UnityStandardBRDF.cginc 
+
+​	https://seblagarde.wordpress.com/2014/04/14/dontnod-physically-based-rendering-chart-for-unreal-engine-4/
