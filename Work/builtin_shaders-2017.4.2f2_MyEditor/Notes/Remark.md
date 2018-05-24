@@ -34,11 +34,19 @@ https://docs.unity3d.com/Manual/RenderingPaths.html
 
 ​	"Vertex"/"VertexLMRGBM"/"VertexLM"
 
-​	Legacy Vertex Lit 是具有最低保真度的渲染路径，并且不支持实时阴影。它是前向渲染的一个子集
+​	Legacy Vertex Lit 是具有最低保真度的渲染路径，并且不支持实时阴影。它是前向渲染的一个子集。
+
+​	由于顶点照明最常用于不可编程着色器的平台，因此Unity无法通过创建多个变种的方式处理光照贴图和无光照贴图的情况。所以，需要明确声明写出多个Pass来处理。
+
+​	Vertex pass 被用来处理无灯光贴图的对象，使用固定功能的OpenGL/Direct3D照明模型（[Blinn-Phong](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model)），所有灯光都会立即渲染。
+
+​	VertexLMRGBM pass 当灯光贴图是RGBM编码（PC和主机）时， 用于光照贴图对象，不能应用实时照明，pass 预期是混合纹理和灯光贴图。
+
+​	VertexLMM pass 当灯光贴图是 double-LDR 编码（移动平台）时，用于光照贴图对象，不能应用实时照明，pass 预期是混合纹理和灯光贴图。
 
 **注：** 使用正交摄像机投影时不支持延迟渲染。如果相机的投影模式设置为“正交”，则这些值将会被覆盖，并且摄像机始终使用“Forward ”渲染。（下面就不介绍Legacy的两种渲染路径了）
 
-"ShaderCaster"
+除了上面的这些之外，要渲染阴影和深度贴图，需要使用 "ShadowCaster" pass。
 
 #### Rendering Paths Comparison
 
@@ -63,13 +71,7 @@ https://docs.unity3d.com/Manual/RenderingPaths.html
 | Mobile (iOS/Android)                                         | OpenGL ES 3.0 & MRT, Metal (on devices with A8 or later SoC) | All                                                          | OpenGL ES 2.0                                    | All            |
 | Consoles                                                     | XB1, PS4                                                     | All                                                          | XB1, PS4, 360                                    | -              |
 
- #### Unity’s Rendering Pipeline
 
-https://docs.unity3d.com/Manual/SL-RenderPipeline.html
-
-​	Shader 决定了物体的外观（它的材质属性）以及它如何对光线做出反应。由于照明计算必须内置到Shader里面，并且有很多光影类型，因此编写“正常工作”的高质量着色器是一项相关任务。为了使之变得简单，Unity提供了Surface Shaders ，其中所有的灯光照明，阴影，灯光贴图，前向和延迟渲染的问题都会自动处理。
-
-​	
 
 ####Forward Rendering :
 
@@ -128,6 +130,66 @@ https://docs.unity3d.com/Manual/SL-RenderPipeline.html
 ​	*SH照明不是局部照明。靠近SH类型的点光源或者聚光灯的一些表面将会“看起来不正确”。*	
 
 ​	综上所述，SH灯光非常适合小的动态物体。
+
+#### Deferred shading rendering path
+
+https://docs.unity3d.com/Manual/RenderTech-DeferredShading.html
+
+https://en.wikipedia.org/wiki/Deferred_shading
+
+​	使用延迟着色时，对可影响游戏对象的灯光数量没有限制。所有的灯都是以像素为单位计算的，这意味着所有灯光都可以使用法线贴图渲染。此外，所有的灯光都可以有Cookies（灯光效果遮罩）和阴影。
+
+​	延迟着色的优点是，照明的处理开销与光照射的像素数量呈正比。这由场景中的灯光数量决定，无论它照亮多少个GameObjects。因此，通过减少灯光可以提高性能。延迟着色也具有高度一致性和可预测的行为。影响每个灯光的效果是逐像素计算的，所以没有在较大的三角面分解的照明计算。？
+
+​	缺点：延迟渲染没有真正的抗锯齿支持，并且无法处理半透明的物体（这些物体在前向渲染中实现）。Mesh渲染器的“接收阴影”的设置也不支持，并且尽在有限的方式中支持CullMask。最多只能使用四个层的遮罩。
+
+##### Requirements
+
+​	延迟渲染需要显卡支持  Multiple Render Targets 多渲染对象 (MRT)。Shader Model 3.0 （或更高版本）的显卡，以及支持深度渲染纹理。2006年之后制造的大多数PC显卡都支持延迟渲染，从GeForce 8xxx,Radeon X2400,Intel G45开始。
+
+​	在移动设备上，延迟渲染不支持，主要是由于使用了MRT格式（一些支持多个渲染目标的GPU仍然仅支持非常有限的位数）。
+
+注：使用正交摄像机，不支持延迟渲染。如果相机的投影模式为“正交”，则相机将回退到前向渲染。
+
+##### Performance considerations
+
+​	Deferred Shading 中实时灯光的渲染开销和灯光照射的像素数成正比，并且与场景的复杂度无关。所以小的点光源或者聚光灯渲染的消耗非常小，并且如果有全部或者部分被场景中的物体遮挡住，消耗就更小。
+
+​	当然，有阴影的灯光会比没有阴影的灯光开销大。在Deferred Shading中，产生阴影的物体仍然需要为每个投影灯渲染一次或多次。此外，应用投影的Shader会比禁用阴影的Shader渲染成本更高。
+
+##### Implementation details
+
+​	不支持延迟渲染Shader 的对象在前向渲染路径 完成延迟着色之后进行渲染。
+
+​	The geometry buffer 几何缓冲区 (g-buffer) 中的渲染目标（RT0 - RT4）的默认布局如下所示：数据类型放在每个渲染目标的各个通道中。使用的通道显示在括号内：
+
+- RT0, ARGB32 format: Diffuse color (RGB), occlusion (A).
+- RT1, ARGB32 format: Specular color (RGB), roughness (A).
+- RT2, ARGB2101010 format: World space normal (RGB), unused (A).
+- RT3, ARGB2101010 (non-HDR) or ARGBHalf (HDR) format: Emission + lighting + lightmaps + reflection probes buffer.
+- Depth+Stencil buffer.
+
+所以默认的g-buffer布局是 160bits/pixel(非HDR) 或 192bits/pixel (HDR)
+
+如果使用 Shadowmask 或 Distance Shadowmask 模式来混合灯光，则使用第五个目标：
+
+- RT4, ARGB32 format: Light occlusion values (RGBA).
+
+​	因此，g缓冲区布局是192bits/pixel（非HDR）或224bits/pixel（HDR）。 
+
+​	如果硬件不支持五个兵法的rendertaret，则使用shadowmasks的对象将回退到前向渲染路径。当摄像机不使用HDR时，Emission+lighting buffer (RT3) 将以对数编码来提供比通常的ARGB32格式更大的动态范围。
+
+##### G-Buffer pass
+
+​	G-Buffer pass 渲染每个游戏对象一次。Diffuse 、Specular colors、 surface smoothness、world space normal、 emission+ambient+reflections+lightmaps 这些被存储在g-buffer 的贴图中。g-buffer 的纹理贴图设置为全局Shader属性，以供以后的着色器访问(*CameraGBufferTexture0 ..* CameraGBufferTexture3 这些名字)。 
+
+##### Lighting pass
+
+​	Lighting Pass 依赖g-buffer 和 深度 来计算着色效果。灯光在屏幕空间计算的，因此处理所花费的时间与场景复杂度无关。最终的着色结果是被添加到自发光缓冲区。
+
+​	不穿过摄像机近裁剪面的点光源和聚光灯会被作为3D形状渲染，，并且Z Buffer的测试是针对启用的场景进行的，这使得部分或完全被遮挡的点光源和聚光灯消耗非常低。穿过近裁剪面的方向光和点光源聚光灯会被渲染为全屏四边形。
+
+​	如果一个灯光启用了阴影，那么将会在这个通道中渲染和使用。注意阴影的使用并不是“免费”的；投射阴影需要被渲染，并且必须应用更复杂的灯光着色器。
 
 ###[tangentToWorld]	
 
@@ -304,3 +366,12 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 ###[SphericalHarmonic]
 
+​	Spherical Harmonic 球面谐波 
+
+​	https://blog.csdn.net/leonwei/article/details/78269765
+
+​	http://silviojemma.com/public/papers/lighting/spherical-harmonic-lighting.pdf 
+
+​	原理太复杂，这里只介绍怎么用：
+
+​	**TODO**

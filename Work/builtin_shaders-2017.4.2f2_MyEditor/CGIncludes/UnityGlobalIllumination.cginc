@@ -110,7 +110,7 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
     o_gi.light.color *= data.atten; // 灯光做衰减
 
     // 计算球谐光照
-    // @Remark: [SphericalHarmonic] // DOING
+    // @Remark: [SphericalHarmonic] 
     #if UNITY_SHOULD_SAMPLE_SH
         o_gi.indirect.diffuse = ShadeSHPerPixel(normalWorld, data.ambient, data.worldPos);
     #endif

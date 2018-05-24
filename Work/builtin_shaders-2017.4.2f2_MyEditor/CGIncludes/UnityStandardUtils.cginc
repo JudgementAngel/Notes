@@ -201,6 +201,8 @@ half3 ShadeSHPerVertex (half3 normal, half3 ambient)
     return ambient;
 }
 
+// 逐像素的球谐光照 
+// @TODO
 half3 ShadeSHPerPixel (half3 normal, half3 ambient, float3 worldPos)
 {
     half3 ambient_contrib = 0.0;
