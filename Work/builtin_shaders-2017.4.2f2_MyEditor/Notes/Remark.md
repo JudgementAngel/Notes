@@ -2,6 +2,75 @@
 
 ###[RenderingPipline]
 
+####Rendering Paths
+
+https://docs.unity3d.com/Manual/RenderingPaths.html
+
+​	Unity支持多种不同的 Rendering Paths 。你应该根据你的游戏内容以及目标平台/硬件。不同的渲染路径有不同的性能特点，主要是影响灯光和阴影。
+
+​	可以在Graphics Settings 中设置项目的Rendering Path ，也可以针对每个摄像机重写这个参数。
+
+​	如果当前显卡不支持选择的Rendering Path，Unity将会自动使用低一级相似度最接近的那个。例如：如果GPU不支持 Deferred Shading ，则将会使用 Forward Rendering。
+
+##### Deferred Shading
+
+​	"Deferred"
+
+​	延迟着色 是具有最高照明和阴影保真度的渲染路径，如果你有很多实时灯光，则适合用这个渲染路径，但是它需要一定的硬件支持。（大部分的手机和移动平台都不支持）
+
+##### Forward Rendering
+
+​	"LightMode" = "ForwardBase" / "ForwardAdd"
+
+​	前向渲染是传统的渲染路径，它支持Unity图形的典型特性（法线贴图，逐像素光照，阴影等等）。但是，在默认的设置下，只有少量最亮的灯光会逐像素计算。其余的灯光都是在物体顶点或者每个物体计算的。
+
+##### Legacy Deferred
+
+​	"PrepassBase" / "PrepassFinal"
+
+​	Legacy Deferred (逐Pass 光照)是一种轻量的延迟着色。只是使用不同的技术和不同的权衡。它不支持Unity5基于物理的标准的着色器。
+
+#####Legacy Vertex Lit
+
+​	"Vertex"/"VertexLMRGBM"/"VertexLM"
+
+​	Legacy Vertex Lit 是具有最低保真度的渲染路径，并且不支持实时阴影。它是前向渲染的一个子集
+
+**注：** 使用正交摄像机投影时不支持延迟渲染。如果相机的投影模式设置为“正交”，则这些值将会被覆盖，并且摄像机始终使用“Forward ”渲染。（下面就不介绍Legacy的两种渲染路径了）
+
+"ShaderCaster"
+
+#### Rendering Paths Comparison
+
+|                                                              | **Deferred**                                                 | **Forward**                                                  | **Legacy Deferred**                              | **Vertex Lit** |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------ | -------------- |
+| **Features 特性**                                            |                                                              |                                                              |                                                  |                |
+| Per-pixel lighting (normal maps, light cookies) 逐像素灯光（法线贴图，灯光效果遮罩） | Yes                                                          | Yes                                                          | Yes                                              | -              |
+| Realtime shadows 实时阴影                                    | Yes                                                          | With caveats有一些注意事项                                   | Yes                                              | -              |
+| Reflection Probes 反射探针                                   | Yes                                                          | Yes                                                          | -                                                | -              |
+| Depth&Normals Buffers 深度和法线缓冲                         | Yes                                                          | Additional render passes Add 渲染通道                        | Yes                                              | -              |
+| Soft Particles 软粒子                                        | Yes                                                          | -                                                            | Yes                                              | -              |
+| Semitransparent objects 半透明物体                           | -                                                            | Yes                                                          | -                                                | Yes            |
+| Anti-Aliasing 抗锯齿                                         | -                                                            | Yes                                                          | -                                                | Yes            |
+| Light Culling Masks 灯光剔除遮罩                             | Limited 受限的                                               | Yes                                                          | Limited                                          | Yes            |
+| Lighting Fidelity 灯光保真度                                 | All per-pixel 所有逐像素的                                   | Some per-pixel 一些逐像素的                                  | All per-pixel                                    | All per-vertex |
+| **Performance  性能**                                        |                                                              |                                                              |                                                  |                |
+| Cost of a per-pixel Light  每像素的光照消耗                  | Number of pixels it illuminates 它照亮的像素数               | Number of pixels * Number of objects it illuminates 像素数量 * 它照亮的物体数量 | Number of pixels it illuminates 它照亮的像素数量 | -              |
+| Number of times objects are normally rendered 物体正常渲染的次数 | 1                                                            | Number of per-pixel lights 逐像素灯光的数量                  | 2                                                | 1              |
+| Overhead for simple scenes 简单场景的开销                    | High                                                         | None                                                         | Medium                                           | None           |
+| **Platform Support 支持的平台**                              |                                                              |                                                              |                                                  |                |
+| PC (Windows/Mac)                                             | Shader Model 3.0+ & MRT                                      | All                                                          | Shader Model 3.0+                                | All            |
+| Mobile (iOS/Android)                                         | OpenGL ES 3.0 & MRT, Metal (on devices with A8 or later SoC) | All                                                          | OpenGL ES 2.0                                    | All            |
+| Consoles                                                     | XB1, PS4                                                     | All                                                          | XB1, PS4, 360                                    | -              |
+
+ #### Unity’s Rendering Pipeline
+
+https://docs.unity3d.com/Manual/SL-RenderPipeline.html
+
+​	Shader 决定了物体的外观（它的材质属性）以及它如何对光线做出反应。由于照明计算必须内置到Shader里面，并且有很多光影类型，因此编写“正常工作”的高质量着色器是一项相关任务。为了使之变得简单，Unity提供了Surface Shaders ，其中所有的灯光照明，阴影，灯光贴图，前向和延迟渲染的问题都会自动处理。
+
+​	
+
 ####Forward Rendering :
 
 ​	https://docs.unity3d.com/Manual/RenderTech-ForwardRendering.html
@@ -52,13 +121,13 @@
 
 ​	SH光照的缺点：
 
-​	它们是在对象的顶点计算的，而不是像素。这意味着他们不支持 Light Cookies 灯光遮罩 或 Normal Maps 法线贴图。
+​	*它们是在对象的顶点计算的，而不是像素。这意味着他们不支持 Light Cookies 灯光遮罩 或 Normal Maps 法线贴图。*
 
-​	SH光照的频率很低，因此不能进行尖锐的照明转换。它们也仅影响漫反射照明（对于镜面高光来说频率太低）。
+​	*SH光照的频率很低，因此不能进行尖锐的照明转换。它们也仅影响漫反射照明（对于镜面高光来说频率太低）。*
 
-​	SH照明不是局部照明。靠近SH类型的点光源或者聚光灯的一些表面将会“看起来不正确”。	
+​	*SH照明不是局部照明。靠近SH类型的点光源或者聚光灯的一些表面将会“看起来不正确”。*	
 
-
+​	综上所述，SH灯光非常适合小的动态物体。
 
 ###[tangentToWorld]	
 
