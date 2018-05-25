@@ -375,3 +375,23 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 ​	原理太复杂，这里只介绍怎么用：
 
 ​	**TODO**
+
+
+
+###[SubtractMainLightWithRealtimeAttenuationFromLightmap]
+
+​	**TODO**
+
+
+
+###[BoxProjectedCubemapDirection]
+
+https://zhuanlan.zhihu.com/p/35495074 
+
+**TODO**
+
+
+
+### [UnityInstancing]
+
+​	**TODO**

@@ -530,6 +530,7 @@ half mipmapLevelToPerceptualRoughness(half mipmapLevel)
 }
 
 // ----------------------------------------------------------------------------
+// @TODO
 half3 Unity_GlossyEnvironment (UNITY_ARGS_TEXCUBE(tex), half4 hdr, Unity_GlossyEnvironmentData glossIn)
 {
     half perceptualRoughness = glossIn.roughness /* perceptualRoughness */ ;

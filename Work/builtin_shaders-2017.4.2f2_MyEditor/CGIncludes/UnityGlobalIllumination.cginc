@@ -50,33 +50,46 @@ inline void ResetUnityLight(out UnityLight outLight)
     outLight.ndotl = 0; // Not used // 不再使用
 }
 
+// 用从Lightmap中获取实时衰减减去主灯光
+// @Remarl:[SubtractMainLightWithRealtimeAttenuationFromLightmap]
 inline half3 SubtractMainLightWithRealtimeAttenuationFromLightmap (half3 lightmap, half attenuation, half4 bakedColorTex, half3 normalWorld)
 {
-    // Let's try to make realtime shadows work on a surface, which already contains
-    // baked lighting and shadowing from the main sun light.
+    // Let's try to make realtime shadows work on a surface, which already contains baked lighting and shadowing from the main sun light.
+    // 让我们尝试在表面制作实时阴影，已经包含了主太阳光的烘焙的光影
     half3 shadowColor = unity_ShadowColor.rgb;
     half shadowStrength = _LightShadowData.x;
 
     // Summary:
+    // 概要：
     // 1) Calculate possible value in the shadow by subtracting estimated light contribution from the places occluded by realtime shadow:
     //      a) preserves other baked lights and light bounces
     //      b) eliminates shadows on the geometry facing away from the light
     // 2) Clamp against user defined ShadowColor.
     // 3) Pick original lightmap value, if it is the darkest one.
 
+    // 1) 通过从被实时阴影遮挡的地方减去预计灯光的贡献来计算阴影中可能的值：
+    //      a) 保留其他烘焙灯光和灯光反弹
+    //      b) 消除了背离光线的几何图形上的阴影
+    // 2) 限制用户定义的ShadowColor。
+    // 3) 选择原本的灯光贴图数值，如果它是最黑的那个。
 
     // 1) Gives good estimate of illumination as if light would've been shadowed during the bake.
     //    Preserves bounce and other baked lights
     //    No shadows on the geometry facing away from the light
+    // 1) 给出很好的照明估计，就好像灯光在烘焙的过程中被阴影遮挡一样。
+    //    保留反弹和其他烘焙的灯光
+    //    远离光线的几何图形上没有阴影
     half ndotl = LambertTerm (normalWorld, _WorldSpaceLightPos0.xyz);
     half3 estimatedLightContributionMaskedByInverseOfShadow = ndotl * (1- attenuation) * _LightColor0.rgb;
     half3 subtractedLightmap = lightmap - estimatedLightContributionMaskedByInverseOfShadow;
 
     // 2) Allows user to define overall ambient of the scene and control situation when realtime shadow becomes too dark.
+    // 2) 允许用户定义场景的整体环境光，并且在实时阴影太暗的时候控制情况。
     half3 realtimeShadow = max(subtractedLightmap, shadowColor);
     realtimeShadow = lerp(realtimeShadow, lightmap, shadowStrength);
 
     // 3) Pick darkest color
+    // 3) 选择最暗的颜色
     return min(lightmap, realtimeShadow);
 }
 
@@ -117,9 +130,11 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
 
     #if defined(LIGHTMAP_ON)
         // Baked lightmaps
+        // 烘焙的灯光贴图
         half4 bakedColorTex = UNITY_SAMPLE_TEX2D(unity_Lightmap, data.lightmapUV.xy);
         half3 bakedColor = DecodeLightmap(bakedColorTex);
 
+        // 是否合并灯光方向贴图
         #ifdef DIRLIGHTMAP_COMBINED
             fixed4 bakedDirTex = UNITY_SAMPLE_TEX2D_SAMPLER (unity_LightmapInd, unity_Lightmap, data.lightmapUV.xy);
             o_gi.indirect.diffuse += DecodeDirectionalLightmap (bakedColor, bakedDirTex, normalWorld);
@@ -129,7 +144,7 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
                 o_gi.indirect.diffuse = SubtractMainLightWithRealtimeAttenuationFromLightmap (o_gi.indirect.diffuse, data.atten, bakedColorTex, normalWorld);
             #endif
 
-        #else // not directional lightmap
+        #else // not directional lightmap // 没有灯光方向贴图
             o_gi.indirect.diffuse += bakedColor;
 
             #if defined(LIGHTMAP_SHADOW_MIXING) && !defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN)
@@ -141,7 +156,7 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
     #endif
 
     #ifdef DYNAMICLIGHTMAP_ON
-        // Dynamic lightmaps
+        // Dynamic lightmaps // 动态灯光贴图 
         fixed4 realtimeColorTex = UNITY_SAMPLE_TEX2D(unity_DynamicLightmap, data.lightmapUV.zw);
         half3 realtimeColor = DecodeRealtimeLightmap (realtimeColorTex);
 
@@ -153,17 +168,18 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
         #endif
     #endif
 
-    o_gi.indirect.diffuse *= occlusion;
+    o_gi.indirect.diffuse *= occlusion; // 对间接灯光做遮罩
     return o_gi;
 }
 
-
+// 间接光照高光项
 inline half3 UnityGI_IndirectSpecular(UnityGIInput data, half occlusion, Unity_GlossyEnvironmentData glossIn)
 {
     half3 specular;
 
     #ifdef UNITY_SPECCUBE_BOX_PROJECTION
         // we will tweak reflUVW in glossIn directly (as we pass it to Unity_GlossyEnvironment twice for probe0 and probe1), so keep original to pass into BoxProjectedCubemapDirection
+        // 我们将会直接调整 glossIn 中的 reflUVW （因为我们将它传递到 Unity_GlossEnvironment 两次，用于 probe0 和 probe1），所以请保持原始传递到BoxProjectedCubemapDirection
         half3 originalReflUVW = glossIn.reflUVW;
         glossIn.reflUVW = BoxProjectedCubemapDirection (originalReflUVW, data.worldPos, data.probePosition[0], data.boxMin[0], data.boxMax[0]);
     #endif

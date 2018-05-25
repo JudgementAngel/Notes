@@ -308,12 +308,12 @@ CBUFFER_END
     UNITY_DECLARE_TEX3D_FLOAT(unity_ProbeVolumeSH);
 
     CBUFFER_START(UnityProbeVolume)
-        // x = Disabled(0)/Enabled(1)
-        // y = Computation are done in global space(0) or local space(1)
-        // z = Texel size on U texture coordinate
+        // x = Disabled(0)/Enabled(1) // 单个对象是否使用LPPV(光照探针代理体) 启用，x 存放 1 ；不启用，x 存放 0
+        // y = Computation are done in global space(0) or local space(1) // 在全局空间计算，y 存放 0 ；在局部空间计算，y 存放 1
+        // z = Texel size on U texture coordinate // z 存储 U方向上纹理坐标的纹素大小
         float4 unity_ProbeVolumeParams;
 
-        float4x4 unity_ProbeVolumeWorldToObject;
+        float4x4 unity_ProbeVolumeWorldToObject; // 灯光探针的世界空间到局部空间的变换矩阵
         float3 unity_ProbeVolumeSizeInv;
         float3 unity_ProbeVolumeMin;
     CBUFFER_END

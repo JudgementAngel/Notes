@@ -25,3 +25,42 @@
 **HANDLE_SHADOWS_BLENDING_IN_GI**		是否在GI中混合阴影
 
 **UNITY_SHOULD_SAMPLE_SH** 		是否应该采样球谐光照
+
+**UNITY_SAMPLE_FULL_SH_PER_PIXEL** 	是否逐像素采样完整的SH光照
+
+**UNITY_LIGHT_PROBE_PROXY_VOLUME** 	是否使用光照探针代理体
+
+**UNITY_COLORSPACE_GAMMA** 	是否使用Gamma颜色空间
+
+**DIRLIGHTMAP_COMBINED** 	是否合并灯光的方向贴图
+
+**LIGHTMAP_SHADOW_MIXING** 	TODO
+
+**SHADOWS_SHADOWMASK** 	TODO
+
+**SHADOWS_SCREEN**	 TODO
+
+**DYNAMICLIGHTMAP_ON** 		是否启用动态灯光贴图
+
+**VERTEXLIGHT_ON** 	是否开启顶点灯光
+
+
+
+------
+
+
+
+**_NORMALMAP**	是否使用法线贴图
+
+**_PARALLAXMAP**	是否使用视差贴图
+
+**_ALPHATEST_ON**	是否使用Alpha Test 剔除模式
+
+**_ALPHAPREMULTIPLY_ON** 是否使用Alpha 预乘，Alpha预乘主要用于 Standard 中特殊的 Transparent 的混合模式
+
+**_GLOSSYREFLECTIONS_OFF** 	是否启用光泽度反射
+
+**_ALPHABLEND_ON** 	是否使用Alpha混合
+
+**_ALPHAPREMULTIPLY_ON** 	是否使用Alpha 预乘
+

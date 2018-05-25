@@ -179,38 +179,48 @@ half3x3 CreateTangentToWorldPerVertex(half3 normal, half3 tangent, half tangentS
 }
 
 //-------------------------------------------------------------------------------------
+// 逐顶点计算SH光照
 half3 ShadeSHPerVertex (half3 normal, half3 ambient)
 {
+    // 如果定义了全部逐像素计算
     #if UNITY_SAMPLE_FULL_SH_PER_PIXEL
         // Completely per-pixel
         // nothing to do here
+        // 完全逐像素计算
+        // 这里什么也不做
     #elif (SHADER_TARGET < 30) || UNITY_STANDARD_SIMPLE
         // Completely per-vertex
+        // 简单版本就完全逐顶点计算
         ambient += max(half3(0,0,0), ShadeSH9 (half4(normal, 1.0)));
-    #else
+    #else // 其他情况
         // L2 per-vertex, L0..L1 & gamma-correction per-pixel
+        // L2 逐顶点计算，L0..L1 和 gamma-矫正 逐像素计算
 
         // NOTE: SH data is always in Linear AND calculation is split between vertex & pixel
+        // 注意：SH 数据总是在线性空间 并且计算分为顶点和像素
         // Convert ambient to Linear and do final gamma-correction at the end (per-pixel)
+        // 将环境光转换为线性并在最后做Gamma矫正（逐像素阶段）
         #ifdef UNITY_COLORSPACE_GAMMA
             ambient = GammaToLinearSpace (ambient);
         #endif
-        ambient += SHEvalLinearL2 (half4(normal, 1.0));     // no max since this is only L2 contribution
+        ambient += SHEvalLinearL2 (half4(normal, 1.0));     // no max since this is only L2 contribution // 没有最大值，因为这只是L2的贡献
     #endif
 
     return ambient;
 }
 
 // 逐像素的球谐光照 
-// @TODO
+// @TODO 关于SH的计算还不是很清楚
 half3 ShadeSHPerPixel (half3 normal, half3 ambient, float3 worldPos)
 {
-    half3 ambient_contrib = 0.0;
+    half3 ambient_contrib = 0.0; // 环境贡献
 
     #if UNITY_SAMPLE_FULL_SH_PER_PIXEL
         // Completely per-pixel
-        #if UNITY_LIGHT_PROBE_PROXY_VOLUME
+        // 完全按照逐像素
+        #if UNITY_LIGHT_PROBE_PROXY_VOLUME // 是否使用Light Probe 代理体
             if (unity_ProbeVolumeParams.x == 1.0)
+                // 对光照探针进行采样
                 ambient_contrib = SHEvalLinearL0L1_SampleProbeVolume(half4(normal, 1.0), worldPos);
             else
                 ambient_contrib = SHEvalLinearL0L1(half4(normal, 1.0));
@@ -227,10 +237,14 @@ half3 ShadeSHPerPixel (half3 normal, half3 ambient, float3 worldPos)
         #endif
     #elif (SHADER_TARGET < 30) || UNITY_STANDARD_SIMPLE
         // Completely per-vertex
+        // 完全按照逐顶点
         // nothing to do here. Gamma conversion on ambient from SH takes place in the vertex shader, see ShadeSHPerVertex.
+        // 这里什么也不做。来自SH的环境光的Gamma矫正发生在顶点着色器中，请参阅ShadeSHPerVertex。
     #else
         // L2 per-vertex, L0..L1 & gamma-correction per-pixel
+        // L2 逐顶点，Lo..L1 和 Gamma 矫正 逐像素计算
         // Ambient in this case is expected to be always Linear, see ShadeSHPerVertex()
+        // 在这种情况下，环境光预计总是线性的，参见ShadeSHPerVertex()
         #if UNITY_LIGHT_PROBE_PROXY_VOLUME
             if (unity_ProbeVolumeParams.x == 1.0)
                 ambient_contrib = SHEvalLinearL0L1_SampleProbeVolume (half4(normal, 1.0), worldPos);
@@ -240,7 +254,7 @@ half3 ShadeSHPerPixel (half3 normal, half3 ambient, float3 worldPos)
             ambient_contrib = SHEvalLinearL0L1 (half4(normal, 1.0));
         #endif
 
-        ambient = max(half3(0, 0, 0), ambient+ambient_contrib);     // include L2 contribution in vertex shader before clamp.
+        ambient = max(half3(0, 0, 0), ambient+ambient_contrib);     // include L2 contribution in vertex shader before clamp. // 在Clamp 之前是包含了L2的贡献在顶点着色器中计算
         #ifdef UNITY_COLORSPACE_GAMMA
             ambient = LinearToGammaSpace (ambient);
         #endif
@@ -250,9 +264,11 @@ half3 ShadeSHPerPixel (half3 normal, half3 ambient, float3 worldPos)
 }
 
 //-------------------------------------------------------------------------------------
+// @Remark: [BoxProjectedCubemapDirection]
 inline half3 BoxProjectedCubemapDirection (half3 worldRefl, float3 worldPos, float4 cubemapCenter, float4 boxMin, float4 boxMax)
 {
     // Do we have a valid reflection probe?
+    // 我们是否有有效的反射探针？
     UNITY_BRANCH
     if (cubemapCenter.w > 0.0)
     {

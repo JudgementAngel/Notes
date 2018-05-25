@@ -1,5 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
+// @Remark: [UnityInstancing]
 #ifndef UNITY_INSTANCING_INCLUDED
 #define UNITY_INSTANCING_INCLUDED
 

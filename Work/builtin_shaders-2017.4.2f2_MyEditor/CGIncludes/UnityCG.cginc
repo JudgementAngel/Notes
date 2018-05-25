@@ -251,6 +251,8 @@ inline float3 ObjSpaceViewDir( in float4 v )
 
 
 // Used in ForwardBase pass: Calculates diffuse lighting from 4 point lights, with data packed in a special way.
+// 在ForwardBase pass中使用：计算4点光源的漫射照明，数据以特殊方式打包。
+// @TODO: 具体实现原理
 float3 Shade4PointLights (
     float4 lightPosX, float4 lightPosY, float4 lightPosZ,
     float3 lightColor0, float3 lightColor1, float3 lightColor2, float3 lightColor3,
@@ -326,6 +328,7 @@ float3 ShadeVertexLights (float4 vertex, float3 normal)
 }
 
 // normal should be normalized, w=1.0
+// 法线应该是规格化后的，w = 1.0 
 half3 SHEvalLinearL0L1 (half4 normal)
 {
     half3 x;
@@ -388,17 +391,20 @@ half3 ShadeSH3Order(half4 normal)
 #if UNITY_LIGHT_PROBE_PROXY_VOLUME
 
 // normal should be normalized, w=1.0
+// 法线应该是规格化后的，w = 1.0 
+// @TODO
 half3 SHEvalLinearL0L1_SampleProbeVolume (half4 normal, float3 worldPos)
 {
     const float transformToLocal = unity_ProbeVolumeParams.y;
     const float texelSizeX = unity_ProbeVolumeParams.z;
 
     //The SH coefficients textures and probe occlusion are packed into 1 atlas.
+    // SH的系数纹理和探针遮罩被打包成一个图集
     //-------------------------
     //| ShR | ShG | ShB | Occ |
     //-------------------------
 
-    float3 position = (transformToLocal == 1.0f) ? mul(unity_ProbeVolumeWorldToObject, float4(worldPos, 1.0)).xyz : worldPos;
+    float3 position = (transformToLocal == 1.0f) ? mul(unity_ProbeVolumeWorldToObject, float4(worldPos, 1.0)).xyz : worldPos; // 求位置，根据是否需要在局部空间做更改
     float3 texCoord = (position - unity_ProbeVolumeMin.xyz) * unity_ProbeVolumeSizeInv.xyz;
     texCoord.x = texCoord.x * 0.25f;
 
@@ -579,14 +585,18 @@ inline half3 DecodeRealtimeLightmap( fixed4 color )
 #endif
 }
 
+// 解码灯光方向贴图
 inline half3 DecodeDirectionalLightmap (half3 color, fixed4 dirTex, half3 normalWorld)
 {
     // In directional (non-specular) mode Enlighten bakes dominant light direction
+    // 在 directional(non-specular)的模式下，Enlighten 烘焙主导光的方向
     // in a way, that using it for half Lambert and then dividing by a "rebalancing coefficient"
+    // 在某种方式下，它被应用为half Lambert，然后除以“平衡系数”
     // gives a result close to plain diffuse response lightmaps, but normalmapped.
+    // 给出的结果接近普通的漫反射光照贴图，但是是带法线的。
 
-    // Note that dir is not unit length on purpose. Its length is "directionality", like
-    // for the directional specular lightmaps.
+    // Note that dir is not unit length on purpose. Its length is "directionality", like for the directional specular lightmaps.
+    // 注意，方向是故意不设置为单位长度的。它的长度是“方向性”的，就像定向镜面光照贴图一样。
 
     half halfLambert = dot(normalWorld, dirTex.xyz - 0.5) + 0.5;
 

@@ -54,6 +54,7 @@ sampler2D   _EmissionMap;
 //-------------------------------------------------------------------------------------
 // Input functions
 
+// Vertex 着色器的输入结构体，从应用程序中输入
 struct VertexInput
 {
     float4 vertex   : POSITION;

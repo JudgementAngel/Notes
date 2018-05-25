@@ -368,6 +368,7 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
     }
 }
 
+// 如果没有明确指明是否使用反射，则默认开启
 inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambientOrLightmapUV, half atten, UnityLight light)
 {
     return FragmentGI(s, occlusion, i_ambientOrLightmapUV, atten, light, true);
@@ -375,34 +376,38 @@ inline UnityGI FragmentGI (FragmentCommonData s, half occlusion, half4 i_ambient
 
 
 //-------------------------------------------------------------------------------------
+// 最终输出对Alpha作处理
 half4 OutputForward (half4 output, half alphaFromSurface)
 {
     #if defined(_ALPHABLEND_ON) || defined(_ALPHAPREMULTIPLY_ON)
         output.a = alphaFromSurface;
     #else
-        UNITY_OPAQUE_ALPHA(output.a);
+        UNITY_OPAQUE_ALPHA(output.a); // 使用不透明的Alpha 
     #endif
     return output;
 }
 
+// 顶点着色其中的GI
 inline half4 VertexGIForward(VertexInput v, float3 posWorld, half3 normalWorld)
 {
     half4 ambientOrLightmapUV = 0;
-    // Static lightmaps
+    // Static lightmaps // 静态灯光贴图
     #ifdef LIGHTMAP_ON
         ambientOrLightmapUV.xy = v.uv1.xy * unity_LightmapST.xy + unity_LightmapST.zw;
         ambientOrLightmapUV.zw = 0;
     // Sample light probe for Dynamic objects only (no static or dynamic lightmaps)
+    // 仅针对动态物体（不是静态或动态灯光贴图的物体）采样灯光探针
     #elif UNITY_SHOULD_SAMPLE_SH
         #ifdef VERTEXLIGHT_ON
             // Approximated illumination from non-important point lights
+            // 从 non-important 的点光源中近似照明
             ambientOrLightmapUV.rgb = Shade4PointLights (
                 unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
                 unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
                 unity_4LightAtten0, posWorld, normalWorld);
         #endif
 
-        ambientOrLightmapUV.rgb = ShadeSHPerVertex (normalWorld, ambientOrLightmapUV.rgb);
+        ambientOrLightmapUV.rgb = ShadeSHPerVertex (normalWorld, ambientOrLightmapUV.rgb); // 逐顶点的SH光
     #endif
 
     #ifdef DYNAMICLIGHTMAP_ON
@@ -414,31 +419,39 @@ inline half4 VertexGIForward(VertexInput v, float3 posWorld, half3 normalWorld)
 
 // ------------------------------------------------------------------
 //  Base forward pass (directional light, emission, lightmaps, ...)
+// Base forward pass (包含方向光，自发光，灯光贴图，...)
 
+// Forward Base 中 Vertex着色器输出到Fragment着色器的结构体，就是通常所用的 v2f
 struct VertexOutputForwardBase
 {
-    UNITY_POSITION(pos);
-    float4 tex                            : TEXCOORD0;
+    UNITY_POSITION(pos);                                  // 位置
+    float4 tex                            : TEXCOORD0;    // 纹理坐标
     float3 eyeVec                         : TEXCOORD1;
-    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos]
-    half4 ambientOrLightmapUV             : TEXCOORD5;    // SH or Lightmap UV
-    UNITY_SHADOW_COORDS(6)
-    UNITY_FOG_COORDS(7)
+    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos] // [3x3: 用于计算 TangentToWorld 的数组 | 1x3: 用于计算视差贴图的视向量 或 世界空间顶点位置] // @Remark: [tangentToWorld]
+    half4 ambientOrLightmapUV             : TEXCOORD5;    // SH or Lightmap UV // SH 灯光 或者 灯光贴图UV
+    UNITY_SHADOW_COORDS(6)                                // 阴影坐标
+    UNITY_FOG_COORDS(7)                                   // 雾坐标
 
     // next ones would not fit into SM2.0 limits, but they are always for SM3.0+
-    #if UNITY_REQUIRE_FRAG_WORLDPOS && !UNITY_PACK_WORLDPOS_WITH_TANGENT
+    // 接下来的数量将不适合 SM2.0 的限制，但是他们总是适用于 SM3.0+
+
+    // 在Fragment着色器中需要world pos 并且没有将它打包在上面的 TangentToWorld的数组里
+    #if UNITY_REQUIRE_FRAG_WORLDPOS && !UNITY_PACK_WORLDPOS_WITH_TANGENT 
         float3 posWorld                 : TEXCOORD8;
     #endif
 
+    // 为该顶点设置一个实例化的ID，这么做是为了实现 GPU Instancing
     UNITY_VERTEX_INPUT_INSTANCE_ID
+    // 在顶点着色器输出结构中声明目标视线区域
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
+// Forward Base 的Vertex着色程序
 VertexOutputForwardBase vertForwardBase (VertexInput v)
 {
-    UNITY_SETUP_INSTANCE_ID(v);
-    VertexOutputForwardBase o;
-    UNITY_INITIALIZE_OUTPUT(VertexOutputForwardBase, o);
+    UNITY_SETUP_INSTANCE_ID(v); // 设置顶点实例化ID
+    VertexOutputForwardBase o; // 声明输出结构体
+    UNITY_INITIALIZE_OUTPUT(VertexOutputForwardBase, o); //初始化结构体
     UNITY_TRANSFER_INSTANCE_ID(v, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
