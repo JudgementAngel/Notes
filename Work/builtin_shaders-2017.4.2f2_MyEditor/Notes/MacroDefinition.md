@@ -64,3 +64,5 @@
 
 **_ALPHAPREMULTIPLY_ON** 	是否使用Alpha 预乘
 
+**_TANGENT_TO_WORLD**  	切空间到世界变换的数组
+

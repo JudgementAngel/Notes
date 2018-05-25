@@ -70,10 +70,11 @@ struct VertexInput
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+// 求纹理坐标 .xy = 主纹理的uv .zw = 细节纹理的uv  
 float4 TexCoords(VertexInput v)
 {
     float4 texcoord;
-    texcoord.xy = TRANSFORM_TEX(v.uv0, _MainTex); // Always source from uv0
+    texcoord.xy = TRANSFORM_TEX(v.uv0, _MainTex); // Always source from uv0 // 始终来自 uv0
     texcoord.zw = TRANSFORM_TEX(((_UVSec == 0) ? v.uv0 : v.uv1), _DetailAlbedoMap);
     return texcoord;
 }

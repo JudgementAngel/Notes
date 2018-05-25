@@ -452,9 +452,11 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     UNITY_SETUP_INSTANCE_ID(v); // 设置顶点实例化ID
     VertexOutputForwardBase o; // 声明输出结构体
     UNITY_INITIALIZE_OUTPUT(VertexOutputForwardBase, o); //初始化结构体
+    // @TODO :Unity的GPU Instance 具体的实现原理
     UNITY_TRANSFER_INSTANCE_ID(v, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+    // 计算世界空间的顶点位置
     float4 posWorld = mul(unity_ObjectToWorld, v.vertex);
     #if UNITY_REQUIRE_FRAG_WORLDPOS
         #if UNITY_PACK_WORLDPOS_WITH_TANGENT
@@ -465,11 +467,12 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
             o.posWorld = posWorld.xyz;
         #endif
     #endif
-    o.pos = UnityObjectToClipPos(v.vertex);
 
-    o.tex = TexCoords(v);
-    o.eyeVec = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos);
-    float3 normalWorld = UnityObjectToWorldNormal(v.normal);
+    o.pos = UnityObjectToClipPos(v.vertex); // 转换顶点位置到屏幕空间
+
+    o.tex = TexCoords(v); // 计算纹理坐标
+    o.eyeVec = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos); // 从摄像机指向顶点的向量
+    float3 normalWorld = UnityObjectToWorldNormal(v.normal); // 世界空间的法线
     #ifdef _TANGENT_TO_WORLD
         float4 tangentWorld = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
 
@@ -483,10 +486,10 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
         o.tangentToWorldAndPackedData[2].xyz = normalWorld;
     #endif
 
-    //We need this for shadow receving
+    //We need this for shadow receving // 我们需要这个来接受投影
     UNITY_TRANSFER_SHADOW(o, v.uv1);
 
-    o.ambientOrLightmapUV = VertexGIForward(v, posWorld, normalWorld);
+    o.ambientOrLightmapUV = VertexGIForward(v, posWorld, normalWorld); // 顶点GI
 
     #ifdef _PARALLAXMAP
         TANGENT_SPACE_ROTATION;
