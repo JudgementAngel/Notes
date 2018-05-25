@@ -503,6 +503,7 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     return o;
 }
 
+// DOING
 half4 fragForwardBaseInternal (VertexOutputForwardBase i)
 {
     UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
