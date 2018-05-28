@@ -109,6 +109,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
     return h * (v.xy / v.z); // 计算UV偏移的量
 }
 
+// 等价于 lerp(1,b,t)
 half LerpOneTo(half b, half t)
 {
     half oneMinusT = 1 - t;

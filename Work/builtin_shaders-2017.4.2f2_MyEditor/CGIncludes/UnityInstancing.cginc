@@ -251,6 +251,7 @@
 
     #ifdef UNITY_USE_LODFADEARRAY
         // the quantized fade value (unity_LODFade.y) is automatically used for cross-fading instances
+        // 量化的淡入淡出数值(unity_LODFade.y) 会自动应用于 交叉淡入淡出的实例
         #define unity_LODFade       UNITY_ACCESS_INSTANCED_PROP(unity_Builtins0, unity_LODFadeArray).xxxx
     #endif
 

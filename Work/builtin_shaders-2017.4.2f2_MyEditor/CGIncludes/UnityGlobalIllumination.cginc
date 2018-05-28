@@ -168,7 +168,7 @@ inline UnityGI UnityGI_Base(UnityGIInput data, half occlusion, half3 normalWorld
         #endif
     #endif
 
-    o_gi.indirect.diffuse *= occlusion; // 对间接灯光做遮罩
+    o_gi.indirect.diffuse *= occlusion; // 对间接灯光做遮蔽
     return o_gi;
 }
 

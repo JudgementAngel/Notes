@@ -44,6 +44,12 @@
 
 **VERTEXLIGHT_ON** 	是否开启顶点灯光
 
+**LOD_FADE_CROSSFADE** 	LOD淡入淡入的模式是否为交叉淡入淡出 LODFadeMode.CrossFade 
+
+**UNITY_USE_LODFADEARRAY** 	TODO
+
+
+
 
 
 ------

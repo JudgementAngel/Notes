@@ -11,7 +11,8 @@
 
 //-------------------------------------------------------------------------------------
 // Default BRDF to use:
-#if !defined (UNITY_BRDF_PBS) // allow to explicitly override BRDF in custom shader
+// 使用下面默认的 BRDF:
+#if !defined (UNITY_BRDF_PBS) // allow to explicitly override BRDF in custom shader // 允许明确地覆盖自定义着色器中的BRDF
     // still add safe net for low shader models, otherwise we might end up with shaders failing to compile
     #if SHADER_TARGET < 30
         #define UNITY_BRDF_PBS BRDF3_Unity_PBS

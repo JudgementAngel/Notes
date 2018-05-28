@@ -175,9 +175,9 @@ https://en.wikipedia.org/wiki/Deferred_shading
 
 - RT4, ARGB32 format: Light occlusion values (RGBA).
 
-​	因此，g缓冲区布局是192bits/pixel（非HDR）或224bits/pixel（HDR）。 
+		因此，g缓冲区布局是192bits/pixel（非HDR）或224bits/pixel（HDR）。 
 
-​	如果硬件不支持五个兵法的rendertaret，则使用shadowmasks的对象将回退到前向渲染路径。当摄像机不使用HDR时，Emission+lighting buffer (RT3) 将以对数编码来提供比通常的ARGB32格式更大的动态范围。
+		如果硬件不支持五个兵法的rendertaret，则使用shadowmasks的对象将回退到前向渲染路径。当摄像机不使用HDR时，Emission+lighting buffer (RT3) 将以对数编码来提供比通常的ARGB32格式更大的动态范围。
 
 ##### G-Buffer pass
 
@@ -395,3 +395,9 @@ https://zhuanlan.zhihu.com/p/35495074
 ### [UnityInstancing]
 
 ​	**TODO**
+
+###[Emission]
+
+​	Unity Standard 的自发光颜色是HDR的，HDR的效果是在GUI脚本中使用TexturePropertyWithHDRColor 实现的。
+
+TexturePropertyWithHDRColor  的应用: TODO 

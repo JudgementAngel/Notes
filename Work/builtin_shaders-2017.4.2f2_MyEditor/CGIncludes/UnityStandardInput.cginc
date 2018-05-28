@@ -119,6 +119,7 @@ half Alpha(float2 uv)
 #endif
 }
 
+// 返回 贴图输入的Occlusion参数
 half Occlusion(float2 uv)
 {
 #if (SHADER_TARGET < 30)
@@ -196,6 +197,8 @@ half2 MetallicRough(float2 uv)
     return mg;
 }
 
+// 获取自发光颜色值
+// @Remark: [Emission]
 half3 Emission(float2 uv)
 {
 #ifndef _EMISSION

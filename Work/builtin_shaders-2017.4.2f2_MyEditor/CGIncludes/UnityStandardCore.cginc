@@ -452,6 +452,7 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     UNITY_SETUP_INSTANCE_ID(v); // 设置顶点实例化ID
     VertexOutputForwardBase o; // 声明输出结构体
     UNITY_INITIALIZE_OUTPUT(VertexOutputForwardBase, o); //初始化结构体
+    
     // @TODO :Unity的GPU Instance 具体的实现原理
     UNITY_TRANSFER_INSTANCE_ID(v, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
@@ -503,30 +504,32 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     return o;
 }
 
-// DOING
+// Forward Base 的 Fragment 着色内部程序
 half4 fragForwardBaseInternal (VertexOutputForwardBase i)
 {
-    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
+    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy); // 应用抖动的交叉淡入淡出
 
-    FRAGMENT_SETUP(s)
+    FRAGMENT_SETUP(s) // 获取 Fragmentdata 数据
 
+    // @TODO : GPU Instance 用到的ID
     UNITY_SETUP_INSTANCE_ID(i);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-    UnityLight mainLight = MainLight ();
-    UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld);
+    UnityLight mainLight = MainLight (); // 获取主灯光参数
+    UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld); // 获取灯光衰减
 
-    half occlusion = Occlusion(i.tex.xy);
-    UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, mainLight);
+    half occlusion = Occlusion(i.tex.xy); // 获取环境光遮蔽
+    UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, mainLight); // 获取全局光照GI
 
     half4 c = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect);
-    c.rgb += Emission(i.tex.xy);
+    c.rgb += Emission(i.tex.xy); // 加上自发光的效果
 
     UNITY_APPLY_FOG(i.fogCoord, c.rgb);
     return OutputForward (c, s.alpha);
 }
 
-half4 fragForwardBase (VertexOutputForwardBase i) : SV_Target   // backward compatibility (this used to be the fragment entry function)
+// Forward Base 的 Fragment 着色程序
+half4 fragForwardBase (VertexOutputForwardBase i) : SV_Target   // backward compatibility (this used to be the fragment entry function) // 向后兼容性（这曾经是Fragment函数的入口）
 {
     return fragForwardBaseInternal(i);
 }

@@ -1054,8 +1054,8 @@ float4 UnityApplyLinearShadowBias(float4 clipPos)
 
 
 // ------------------------------------------------------------------
-//  LOD cross fade helpers
-// keep all the old macros
+//  LOD cross fade helpers // LOD 交叉淡入淡出帮助
+// keep all the old macros // 保留所有旧的宏
 #define UNITY_DITHER_CROSSFADE_COORDS
 #define UNITY_DITHER_CROSSFADE_COORDS_IDX(idx)
 #define UNITY_TRANSFER_DITHER_CROSSFADE(o,v)
@@ -1066,8 +1066,9 @@ float4 UnityApplyLinearShadowBias(float4 clipPos)
     sampler2D _DitherMaskLOD2D;
     void UnityApplyDitherCrossFade(float2 vpos)
     {
-        vpos /= 4; // the dither mask texture is 4x4
-        vpos.y = frac(vpos.y) * 0.0625 /* 1/16 */ + unity_LODFade.y; // quantized lod fade by 16 levels
+        vpos /= 4; // the dither mask texture is 4x4 // 抖动遮罩贴图是 4x4
+        // frac(x) 返回 x的小数部分
+        vpos.y = frac(vpos.y) * 0.0625 /* 1/16 */ + unity_LODFade.y; // quantized lod fade by 16 levels // 用16个等级量化淡入淡出的LOD
         clip(tex2D(_DitherMaskLOD2D, vpos).a - 0.5);
     }
 #else
