@@ -14,6 +14,8 @@
 // 使用下面默认的 BRDF:
 #if !defined (UNITY_BRDF_PBS) // allow to explicitly override BRDF in custom shader // 允许明确地覆盖自定义着色器中的BRDF
     // still add safe net for low shader models, otherwise we might end up with shaders failing to compile
+    // 仍然为低配着色器添加安全网,否则我们可能最终无法编译
+    // @Remark: [UnityBRDF321]
     #if SHADER_TARGET < 30
         #define UNITY_BRDF_PBS BRDF3_Unity_PBS
     #elif defined(UNITY_PBS_USE_BRDF3)
@@ -24,6 +26,7 @@
         #define UNITY_BRDF_PBS BRDF1_Unity_PBS
     #elif defined(SHADER_TARGET_SURFACE_ANALYSIS)
         // we do preprocess pass during shader analysis and we dont actually care about brdf as we need only inputs/outputs
+        // 我们在着色器分析期间进行预处理，我们实际上并不关心brdf，因为我们只需要输入/输出
         #define UNITY_BRDF_PBS BRDF1_Unity_PBS
     #else
         #error something broke in auto-choosing BRDF

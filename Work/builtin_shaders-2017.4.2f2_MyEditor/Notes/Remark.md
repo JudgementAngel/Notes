@@ -401,3 +401,21 @@ https://zhuanlan.zhihu.com/p/35495074
 ​	Unity Standard 的自发光颜色是HDR的，HDR的效果是在GUI脚本中使用TexturePropertyWithHDRColor 实现的。
 
 TexturePropertyWithHDRColor  的应用: TODO 
+
+
+
+### [UnityBRDF321]
+
+
+
+
+
+### [GrazingTerm]
+
+​	grazingTerm 在BRDF3 中 是 saturate(smoothness + (1-oneMinusReflectivity)); 这个具体是什么意思？为什么要这么做？TODO
+
+
+
+###[BRDF2]
+
+​	http://www.thetenthplanet.de/archives/255

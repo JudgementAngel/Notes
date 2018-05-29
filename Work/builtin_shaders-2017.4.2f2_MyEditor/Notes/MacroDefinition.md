@@ -48,9 +48,15 @@
 
 **UNITY_USE_LODFADEARRAY** 	TODO
 
+**UNITY_PBS_USE_BRDF3/2/1** 	定义Shader使用的BRDF，3/2/1 ，优限级和效果依次降低
 
+**SHADER_TARGET_SURFACE_ANALYSIS** 	是否是 着色器目标平面分析阶段
 
+**UNITY_BRDF_GGX** 	是否使用GGX的法线分布函数
 
+**UNITY_COLORSPACE_GAMMA** 	是否使用Gamma的颜色空间
+
+**SHADER_API_MOBILE** 	是否是移动平台的API
 
 ------
 
@@ -71,4 +77,6 @@
 **_ALPHAPREMULTIPLY_ON** 	是否使用Alpha 预乘
 
 **_TANGENT_TO_WORLD**  	切空间到世界变换的数组
+
+**_SPECULARHIGHLIGHTS_OFF** 	是否使用镜面高光反射
 

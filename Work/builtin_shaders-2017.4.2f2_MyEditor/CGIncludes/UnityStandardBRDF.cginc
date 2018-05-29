@@ -168,6 +168,7 @@ inline float GGXTerm (float NdotH, float roughness)
                                             // therefore epsilon is smaller than what can be represented by half
 }
 
+// 从感知粗糙度获取高光强度
 inline half PerceptualRoughnessToSpecPower (half perceptualRoughness)
 {
     half m = PerceptualRoughnessToRoughness(perceptualRoughness);   // m is the true academic roughness.
@@ -208,10 +209,12 @@ float GetSpecPowToMip(float fSpecPow, int nMips)
     //float mip = GetSpecPowToMip (specPower, 7);
 */
 
+// 更安全的Normalize
+// @TODO 为什么要这么做?
 inline float3 Unity_SafeNormalize(float3 inVec)
 {
     float dp3 = max(0.001f, dot(inVec, inVec));
-    return inVec * rsqrt(dp3);
+    return inVec * rsqrt(dp3); // rsqrt(x) = 1/sqrt(x) 求平方根的倒数
 }
 
 //-------------------------------------------------------------------------------------
@@ -315,26 +318,35 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     return half4(color, 1);
 }
 
+// @Remark: [BRDF2]
 // Based on Minimalist CookTorrance BRDF
 // Implementation is slightly different from original derivation: http://www.thetenthplanet.de/archives/255
+// 基于 简单版的 Cooktorrance BRDF模型
+// 实现和原始的版本稍有不同：http://www.thetenthplanet.de/archives/255
 //
 // * NDF (depending on UNITY_BRDF_GGX):
 //  a) BlinnPhong
 //  b) [Modified] GGX
 // * Modified Kelemen and Szirmay-​Kalos for Visibility term
 // * Fresnel approximated with 1/LdotH
+//
+// * NDF 法线分布函数 (依赖于 UNITY_BRDF_GGX 区分)
+//  a) BlinnPhong
+//  b) [改良版] GGX
+// * 改进版的 Kelemen 和 Szirmay-Kalos 作为几何遮挡项
+// * Fresnel 项使用近似的 1/LdotH
 half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     float3 normal, float3 viewDir,
     UnityLight light, UnityIndirect gi)
 {
-    float3 halfDir = Unity_SafeNormalize (float3(light.dir) + viewDir);
+    float3 halfDir = Unity_SafeNormalize (float3(light.dir) + viewDir); //DOING
 
     half nl = saturate(dot(normal, light.dir));
     float nh = saturate(dot(normal, halfDir));
     half nv = saturate(dot(normal, viewDir));
     float lh = saturate(dot(light.dir, halfDir));
 
-    // Specular term
+    // Specular term // 高光反射项
     half perceptualRoughness = SmoothnessToPerceptualRoughness (smoothness);
     half roughness = PerceptualRoughnessToRoughness(perceptualRoughness);
 
@@ -343,12 +355,16 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     // GGX Distribution multiplied by combined approximation of Visibility and Fresnel
     // See "Optimizing PBR for Mobile" from Siggraph 2015 moving mobile graphics course
     // https://community.arm.com/events/1155
+    // GGX 分布乘以可见度和菲涅耳组合的近似值
+    // 查看 2015年 Siggraph移动设备图形论文：“针对移动端优化PBR”
+    // https://community.arm.com/events/1155
     half a = roughness;
     float a2 = a*a;
 
     float d = nh * nh * (a2 - 1.f) + 1.00001f;
-#ifdef UNITY_COLORSPACE_GAMMA
+#ifdef UNITY_COLORSPACE_GAMMA // 是否是Gamma 空间
     // Tighter approximation for Gamma only rendering mode!
+    // 仅Gamma渲染模式更严格的近似
     // DVF = sqrt(DVF);
     // DVF = (a * sqrt(.25)) / (max(sqrt(0.1), lh)*sqrt(roughness + .5) * d);
     float specularTerm = a / (max(0.32f, lh) * (1.5f + roughness) * d);
@@ -359,13 +375,16 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     // on mobiles (where half actually means something) denominator have risk of overflow
     // clamp below was added specifically to "fix" that, but dx compiler (we convert bytecode to metal/gles)
     // sees that specularTerm have only non-negative terms, so it skips max(0,..) in clamp (leaving only min(100,...))
-#if defined (SHADER_API_MOBILE)
+    // 在移动设备上（实际上意味着其中的一半），分母有溢出的风险
+    // clamp 下面被专门添加到“修复”里，除了dx 的编译器（我们将字节码转换到 metal/gles 平台）
+    // 由于 Specular Term 只有非负的项，所以可以跳过 clamp 中的 max(0,...) 只留下 min(100,...) 
+#if defined (SHADER_API_MOBILE) 
     specularTerm = specularTerm - 1e-4f;
 #endif
 
 #else
 
-    // Legacy
+    // Legacy // 遗产
     half specularPower = PerceptualRoughnessToSpecPower(perceptualRoughness);
     // Modified with approximate Visibility function that takes roughness into account
     // Original ((n+1)*N.H^n) / (8*Pi * L.H^3) didn't take into account roughness
@@ -409,11 +428,12 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     return half4(color, 1);
 }
 
-sampler2D_float unity_NHxRoughness;
+sampler2D_float unity_NHxRoughness; //以N.H为U，感知粗糙度为V 的 LUT 查找贴图
+// BRDF3的直接光照
 half3 BRDF3_Direct(half3 diffColor, half3 specColor, half rlPow4, half smoothness)
 {
-    half LUT_RANGE = 16.0; // must match range in NHxRoughness() function in GeneratedTextures.cpp
-    // Lookup texture to save instructions
+    half LUT_RANGE = 16.0; // must match range in NHxRoughness() function in GeneratedTextures.cpp // 必须匹配 GeneratedTextures.cpp 中 NHxRoughness()函数的 range
+    // Lookup texture to save instructions // 使用Lookup 贴图来节省指令数
     half specular = tex2D(unity_NHxRoughness, half2(rlPow4, SmoothnessToPerceptualRoughness(smoothness))).UNITY_ATTEN_CHANNEL * LUT_RANGE;
 #if defined(_SPECULARHIGHLIGHTS_OFF)
     specular = 0.0;
@@ -422,6 +442,7 @@ half3 BRDF3_Direct(half3 diffColor, half3 specColor, half rlPow4, half smoothnes
     return diffColor + specular * specColor;
 }
 
+// BRDF3 的间接光照
 half3 BRDF3_Indirect(half3 diffColor, half3 specColor, UnityIndirect indirect, half grazingTerm, half fresnelTerm)
 {
     half3 c = indirect.diffuse * diffColor;
@@ -431,27 +452,31 @@ half3 BRDF3_Indirect(half3 diffColor, half3 specColor, UnityIndirect indirect, h
 
 // Old school, not microfacet based Modified Normalized Blinn-Phong BRDF
 // Implementation uses Lookup texture for performance
+// 旧的方法，不是基于 Microfacet 微面元理论改良标准化之后的 Blinn-Phong BRDF模型
+// 出于性能考虑，使用Lookup纹理贴图实现
 //
-// * Normalized BlinnPhong in RDF form
-// * Implicit Visibility term
-// * No Fresnel term
+// * Normalized BlinnPhong in RDF form // * 以 RDF的形式规范化 BlinnPhong // @TODO ?
+// * Implicit Visibility term          // * 隐式的可见项
+// * No Fresnel term                   // * 没有Fresnel 项
 //
 // TODO: specular is too weak in Linear rendering mode
+// TODO：线性渲染模式下高光反射太弱
 half4 BRDF3_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     float3 normal, float3 viewDir,
     UnityLight light, UnityIndirect gi)
 {
-    float3 reflDir = reflect (viewDir, normal);
+    float3 reflDir = reflect (viewDir, normal); // 反射向量
 
-    half nl = saturate(dot(normal, light.dir));
+    half nl = saturate(dot(normal, light.dir)); 
     half nv = saturate(dot(normal, viewDir));
 
     // Vectorize Pow4 to save instructions
-    half2 rlPow4AndFresnelTerm = Pow4 (float2(dot(reflDir, light.dir), 1-nv));  // use R.L instead of N.H to save couple of instructions
-    half rlPow4 = rlPow4AndFresnelTerm.x; // power exponent must match kHorizontalWarpExp in NHxRoughness() function in GeneratedTextures.cpp
+    // 矢量化Pow4 来节省指令数
+    half2 rlPow4AndFresnelTerm = Pow4 (float2(dot(reflDir, light.dir), 1-nv));  // use R.L instead of N.H to save couple of instructions // 使用 R.L 来代替 N.H是为了节省几条指令数
+    half rlPow4 = rlPow4AndFresnelTerm.x; // power exponent must match kHorizontalWarpExp in NHxRoughness() function in GeneratedTextures.cpp // power 指数必须和GeneratedTextures.cpp中的 NHxRoughness() 函数中的 kHorizontalWarpExp 参数匹配
     half fresnelTerm = rlPow4AndFresnelTerm.y;
 
-    half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
+    half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity)); // @Remark: [GrazingTerm]
 
     half3 color = BRDF3_Direct(diffColor, specColor, rlPow4, smoothness);
     color *= light.color * nl;
