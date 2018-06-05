@@ -412,10 +412,25 @@ TexturePropertyWithHDRColor  的应用: TODO
 
 ### [GrazingTerm]
 
-​	grazingTerm 在BRDF3 中 是 saturate(smoothness + (1-oneMinusReflectivity)); 这个具体是什么意思？为什么要这么做？TODO
+​	grazingTerm 在BRDF3 中 是 saturate(smoothness + (1-oneMinusReflectivity));表示的意思是在扫视角度的亮度，Fresnel90 的值，但是 为什么要这么做？TODO
 
-
+​	
 
 ###[BRDF2]
 
 ​	http://www.thetenthplanet.de/archives/255
+
+
+
+### [SpecPower]
+
+https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf
+
+粗糙度和高光强度的转换：
+
+```
+roughness = perceptuaRoughness * perceptuaRoughness;
+specPower = max(1e-4f,2.0/max(1e-4f,roughness * roughness)-2.0);
+```
+
+specPower = PerceptualRoughness

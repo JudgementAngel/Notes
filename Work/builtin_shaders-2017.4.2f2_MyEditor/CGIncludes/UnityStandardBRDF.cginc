@@ -94,6 +94,7 @@ inline half3 FresnelLerp (half3 F0, half3 F90, half cosA)
     return lerp (F0, F90, t);
 }
 // approximage Schlick with ^4 instead of ^5
+// 用 4次方 来代替 5次方 来近似优化 Schlick 的结果
 inline half3 FresnelLerpFast (half3 F0, half3 F90, half cosA)
 {
     half t = Pow4 (1 - cosA);
@@ -168,13 +169,14 @@ inline float GGXTerm (float NdotH, float roughness)
                                             // therefore epsilon is smaller than what can be represented by half
 }
 
-// 从感知粗糙度获取高光强度
+// 从感知粗糙度获取高光强度 n = 2.0/pow(pr,4) - 2.0;
+// @Remark: [SpecPower]
 inline half PerceptualRoughnessToSpecPower (half perceptualRoughness)
 {
-    half m = PerceptualRoughnessToRoughness(perceptualRoughness);   // m is the true academic roughness.
+    half m = PerceptualRoughnessToRoughness(perceptualRoughness);   // m is the true academic roughness. // m 是真正学术上的粗糙度
     half sq = max(1e-4f, m*m);
     half n = (2.0 / sq) - 2.0;                          // https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf
-    n = max(n, 1e-4f);                                  // prevent possible cases of pow(0,0), which could happen when roughness is 1.0 and NdotH is zero
+    n = max(n, 1e-4f);                                  // prevent possible cases of pow(0,0), which could happen when roughness is 1.0 and NdotH is zero // 防止 pow(0,0)的情况出现，当roughness 是 1.0，NdotH 是0的时候出现
     return n;
 }
 
@@ -222,19 +224,26 @@ inline float3 Unity_SafeNormalize(float3 inVec)
 // Note: BRDF entry points use smoothness and oneMinusReflectivity for optimization
 // purposes, mostly for DX9 SM2.0 level. Most of the math is being done on these (1-x) values, and that saves
 // a few precious ALU slots.
+// 注意：BRDF入口点使用 smoothness 和 oneMinusReflectivity 是为了优化的目的。
+// 尤其是针对 DX9 SM2.0 的等级。大多数的数学运算是在(1-x)的值上面运行的，这样做会节省一些ALU资源。
 
-
-// Main Physically Based BRDF
+// Main Physically Based BRDF // 基于物理的BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
+// 派生自迪士尼的工作方式 和 Torrance-Sparrow 的微面元模型
 //
 //   BRDF = kD / pi + kS * (D * V * F) / 4
 //   I = BRDF * NdotL
 //
-// * NDF (depending on UNITY_BRDF_GGX):
+// * NDF (depending on UNITY_BRDF_GGX): 
 //  a) Normalized BlinnPhong
 //  b) GGX
-// * Smith for Visiblity term
+// * Smith for Visiblity term 
 // * Schlick approximation for Fresnel
+// * NDF (依赖于 UNITY_BRDF_GGX 来做区分):
+//  a) 规范化的 Blinn-Phong
+//  b) GGX
+// * 可见项是 Smith
+// * Fresnel 项是 Schlick 近似
 half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     float3 normal, float3 viewDir,
     UnityLight light, UnityIndirect gi)
@@ -248,18 +257,26 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 // Following define allow to control this. Set it to 0 if ALU is critical on your platform.
 // This correction is interesting for GGX with SmithJoint visibility function because artifacts are more visible in this case due to highlight edge of rough surface
 // Edit: Disable this code by default for now as it is not compatible with two sided lighting used in SpeedTree.
+// 对于可见的像素来说 NdotV 不应该是负的，但是可能会在透视投影和法线贴图的影响下发生。
+// 在这种情况下，法线应该被修改为有效的（即面向摄像机），并且不会造成奇怪的伪影。
+// 但是这个操作可能增加了一些逻辑运算，并且用户可能并不想要它。另一种方法是简单使用NdotV的绝对值（不太正确，但也可以接受）。
+// 下面这个宏定义允许控制这个。如果ALU对你的目标平台至关重要，请设置为0。
+// 这个修正对带有 SmithJointGGX 的可见函数来说很有趣。因为在这种情况下，由于粗糙表面的突出边缘，伪影更加明显。
+// 编辑：默认禁用此代码，因为它和SpeedTree的双面照明不兼容。
 #define UNITY_HANDLE_CORRECTLY_NEGATIVE_NDOTV 0
 
 #if UNITY_HANDLE_CORRECTLY_NEGATIVE_NDOTV
     // The amount we shift the normal toward the view vector is defined by the dot product.
+    // 我们把法线偏移到视向量的强度是使用点积的结果来定义的。
     half shiftAmount = dot(normal, viewDir);
     normal = shiftAmount < 0.0f ? normal + viewDir * (-shiftAmount + 1e-5f) : normal;
     // A re-normalization should be applied here but as the shift is small we don't do it to save ALU.
+    // 这里应该 re-normalization 一下，但是由于偏移很小，所以我们没这么来节省ALU。
     //normal = normalize(normal);
 
-    half nv = saturate(dot(normal, viewDir)); // TODO: this saturate should no be necessary here
+    half nv = saturate(dot(normal, viewDir)); // TODO: this saturate should no be necessary here // TODO: 这个saturate 在这里没有必要
 #else
-    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact
+    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact 
 #endif
 
     half nl = saturate(dot(normal, light.dir));
@@ -339,7 +356,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     float3 normal, float3 viewDir,
     UnityLight light, UnityIndirect gi)
 {
-    float3 halfDir = Unity_SafeNormalize (float3(light.dir) + viewDir); //DOING
+    float3 halfDir = Unity_SafeNormalize (float3(light.dir) + viewDir); 
 
     half nl = saturate(dot(normal, light.dir));
     float nh = saturate(dot(normal, halfDir));
@@ -362,15 +379,15 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     float a2 = a*a;
 
     float d = nh * nh * (a2 - 1.f) + 1.00001f;
-#ifdef UNITY_COLORSPACE_GAMMA // 是否是Gamma 空间
-    // Tighter approximation for Gamma only rendering mode!
-    // 仅Gamma渲染模式更严格的近似
-    // DVF = sqrt(DVF);
-    // DVF = (a * sqrt(.25)) / (max(sqrt(0.1), lh)*sqrt(roughness + .5) * d);
-    float specularTerm = a / (max(0.32f, lh) * (1.5f + roughness) * d);
-#else
-    float specularTerm = a2 / (max(0.1f, lh*lh) * (roughness + 0.5f) * (d * d) * 4);
-#endif
+    #ifdef UNITY_COLORSPACE_GAMMA // 是否是Gamma 空间
+        // Tighter approximation for Gamma only rendering mode!
+        // 仅Gamma渲染模式更严格的近似
+        // DVF = sqrt(DVF);
+        // DVF = (a * sqrt(.25)) / (max(sqrt(0.1), lh)*sqrt(roughness + .5) * d);
+        float specularTerm = a / (max(0.32f, lh) * (1.5f + roughness) * d);
+    #else
+        float specularTerm = a2 / (max(0.1f, lh*lh) * (roughness + 0.5f) * (d * d) * 4);
+    #endif
 
     // on mobiles (where half actually means something) denominator have risk of overflow
     // clamp below was added specifically to "fix" that, but dx compiler (we convert bytecode to metal/gles)
@@ -378,31 +395,34 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     // 在移动设备上（实际上意味着其中的一半），分母有溢出的风险
     // clamp 下面被专门添加到“修复”里，除了dx 的编译器（我们将字节码转换到 metal/gles 平台）
     // 由于 Specular Term 只有非负的项，所以可以跳过 clamp 中的 max(0,...) 只留下 min(100,...) 
-#if defined (SHADER_API_MOBILE) 
-    specularTerm = specularTerm - 1e-4f;
-#endif
+    #if defined (SHADER_API_MOBILE) 
+        specularTerm = specularTerm - 1e-4f;
+    #endif
 
 #else
 
-    // Legacy // 遗产
+    // Legacy // 遗产，不使用GGX就使用这个方式来代替
     half specularPower = PerceptualRoughnessToSpecPower(perceptualRoughness);
     // Modified with approximate Visibility function that takes roughness into account
     // Original ((n+1)*N.H^n) / (8*Pi * L.H^3) didn't take into account roughness
     // and produced extremely bright specular at grazing angles
+    // 修改为用粗糙度近似 可见项函数
+    // 原本的 ((n+1)*N.H^n) / (8*Pi * L.H^3) 没有考虑 粗糙度
+    // 并且在扫视角度有非常亮的高光
 
-    half invV = lh * lh * smoothness + perceptualRoughness * perceptualRoughness; // approx ModifiedKelemenVisibilityTerm(lh, perceptualRoughness);
-    half invF = lh;
+    half invV = lh * lh * smoothness + perceptualRoughness * perceptualRoughness; // approx ModifiedKelemenVisibilityTerm(lh, perceptualRoughness); // 约等于修改的Kelemen可见项(lh,perceptualRoughness) smoothness 是感知光滑度 这里计算的是 1/V
+    half invF = lh; // 1/F 
 
-    half specularTerm = ((specularPower + 1) * pow (nh, specularPower)) / (8 * invV * invF + 1e-4h);
+    half specularTerm = ((specularPower + 1) * pow (nh, specularPower)) / (8 * invV * invF + 1e-4h); // @TODO: ?
 
-#ifdef UNITY_COLORSPACE_GAMMA
-    specularTerm = sqrt(max(1e-4f, specularTerm));
-#endif
+    #ifdef UNITY_COLORSPACE_GAMMA
+        specularTerm = sqrt(max(1e-4f, specularTerm));
+    #endif
 
 #endif
 
 #if defined (SHADER_API_MOBILE)
-    specularTerm = clamp(specularTerm, 0.0, 100.0); // Prevent FP16 overflow on mobiles
+    specularTerm = clamp(specularTerm, 0.0, 100.0); // Prevent FP16 overflow on mobiles // 防止手机上的FP16溢出 @TODO: ?
 #endif
 #if defined(_SPECULARHIGHLIGHTS_OFF)
     specularTerm = 0.0;
@@ -412,6 +432,8 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
     // 1-0.28*x^3 as approximation for (1/(x^4+1))^(1/2.2) on the domain [0;1]
     // 1-x^3*(0.6-0.08*x)   approximation for 1/(x^4+1)
+    // 1-0.28*x^3 用于在[0,1]的值域上近似 (1/(x^4+1))^(1/2.2)
+    // 1-x^3*(0.6-0.08*x)   用于近似 1/(x^4+1)
 #ifdef UNITY_COLORSPACE_GAMMA
     half surfaceReduction = 0.28;
 #else
@@ -419,7 +441,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 #endif
 
     surfaceReduction = 1.0 - roughness*perceptualRoughness*surfaceReduction;
-
+    // @Remark:[GrazingTerm]
     half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
     half3 color =   (diffColor + specularTerm * specColor) * light.color * nl
                     + gi.diffuse * diffColor
