@@ -67,3 +67,14 @@ $G = min(1,G_b,G_c)$
 
 
 Shader Calibration Scene 50 beta.unitypackage 
+
+
+
+#####简化版各向异性金属拉丝效果实现
+
+原理： 法线偏移 + 三角函数周期化处理（环形效果）
+
+```
+
+```
+
