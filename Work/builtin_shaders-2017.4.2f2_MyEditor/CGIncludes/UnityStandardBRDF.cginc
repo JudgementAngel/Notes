@@ -276,7 +276,7 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
     half nv = saturate(dot(normal, viewDir)); // TODO: this saturate should no be necessary here // TODO: 这个saturate 在这里没有必要
 #else
-    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact 
+    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact  // DOING
 #endif
 
     half nl = saturate(dot(normal, light.dir));
