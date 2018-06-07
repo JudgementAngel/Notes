@@ -102,10 +102,11 @@ inline half3 FresnelLerpFast (half3 F0, half3 F90, half cosA)
 }
 
 // Note: Disney diffuse must be multiply by diffuseAlbedo / PI. This is done outside of this function.
+// 注意：Disney 漫反射必须乘 diffuseAlbedo / PI 。 这一部分在这个函数外面实现
 half DisneyDiffuse(half NdotV, half NdotL, half LdotH, half perceptualRoughness)
 {
     half fd90 = 0.5 + 2 * LdotH * LdotH * perceptualRoughness;
-    // Two schlick fresnel term
+    // Two schlick fresnel term // 两个 schlick Fresnel 项
     half lightScatter   = (1 + (fd90 - 1) * Pow5(1 - NdotL));
     half viewScatter    = (1 + (fd90 - 1) * Pow5(1 - NdotV));
 
@@ -114,17 +115,19 @@ half DisneyDiffuse(half NdotV, half NdotL, half LdotH, half perceptualRoughness)
 
 // NOTE: Visibility term here is the full form from Torrance-Sparrow model, it includes Geometric term: V = G / (N.L * N.V)
 // This way it is easier to swap Geometric terms and more room for optimizations (except maybe in case of CookTorrance geom term)
+// 注意：可见项是来自 Torrance-Sparrow 模型的完整形式，它包含了 几何遮挡项 ： V = G / (N.L * N.V)
+// 这种方式可以更容易地交换几何项，并且有更多空间进行优化（除了可能在CookTorrance几何术语的情况下）
 
-// Generic Smith-Schlick visibility term
+// Generic Smith-Schlick visibility term // 通用的 Smith-Schlick 可见项
 inline half SmithVisibilityTerm (half NdotL, half NdotV, half k)
 {
     half gL = NdotL * (1-k) + k;
     half gV = NdotV * (1-k) + k;
-    return 1.0 / (gL * gV + 1e-5f); // This function is not intended to be running on Mobile,
-                                    // therefore epsilon is smaller than can be represented by half
+    return 1.0 / (gL * gV + 1e-5f); // This function is not intended to be running on Mobile, // 这个函数不打算在Mobile上运行，
+                                    // therefore epsilon is smaller than can be represented by half // 因此 e 小于可以表示的一半
 }
 
-// Smith-Schlick derived for Beckmann
+// Smith-Schlick derived for Beckmann //  Smith-Schlick 派生自 Beckmann
 inline half SmithBeckmannVisibilityTerm (half NdotL, half NdotV, half roughness)
 {
     half c = 0.797884560802865h; // c = sqrt(2 / Pi)
@@ -136,12 +139,12 @@ inline half SmithBeckmannVisibilityTerm (half NdotL, half NdotV, half roughness)
 inline half SmithJointGGXVisibilityTerm (half NdotL, half NdotV, half roughness)
 {
 #if 0
-    // Original formulation:
+    // Original formulation: // 原始的公式：
     //  lambda_v    = (-1 + sqrt(a2 * (1 - NdotL2) / NdotL2 + 1)) * 0.5f;
     //  lambda_l    = (-1 + sqrt(a2 * (1 - NdotV2) / NdotV2 + 1)) * 0.5f;
     //  G           = 1 / (1 + lambda_v + lambda_l);
 
-    // Reorder code to be more optimal
+    // Reorder code to be more optimal // 重新排列代码让其更优化
     half a          = roughness;
     half a2         = a * a;
 
@@ -149,10 +152,10 @@ inline half SmithJointGGXVisibilityTerm (half NdotL, half NdotV, half roughness)
     half lambdaL    = NdotV * sqrt((-NdotL * a2 + NdotL) * NdotL + a2);
 
     // Simplify visibility term: (2.0f * NdotL * NdotV) /  ((4.0f * NdotL * NdotV) * (lambda_v + lambda_l + 1e-5f));
-    return 0.5f / (lambdaV + lambdaL + 1e-5f);  // This function is not intended to be running on Mobile,
-                                                // therefore epsilon is smaller than can be represented by half
+    return 0.5f / (lambdaV + lambdaL + 1e-5f);  // This function is not intended to be running on Mobile, // 这个函数不打算在Mobile上运行，
+                                                // therefore epsilon is smaller than can be represented by half // 因此 e 小于可以表示的一半
 #else
-    // Approximation of the above formulation (simplify the sqrt, not mathematically correct but close enough)
+    // Approximation of the above formulation (simplify the sqrt, not mathematically correct but close enough) // 近似上述公式（简化sqrt，不是数学上正确但足够接近）
     half a = roughness;
     half lambdaV = NdotL * (NdotV * (1 - a) + a);
     half lambdaL = NdotV * (NdotL * (1 - a) + a);
@@ -165,8 +168,8 @@ inline float GGXTerm (float NdotH, float roughness)
 {
     float a2 = roughness * roughness;
     float d = (NdotH * a2 - NdotH) * NdotH + 1.0f; // 2 mad
-    return UNITY_INV_PI * a2 / (d * d + 1e-7f); // This function is not intended to be running on Mobile,
-                                            // therefore epsilon is smaller than what can be represented by half
+    return UNITY_INV_PI * a2 / (d * d + 1e-7f); // This function is not intended to be running on Mobile, // 这个函数不打算在Mobile上运行，
+                                            // therefore epsilon is smaller than what can be represented by half // 因此 e 小于可以表示的一半
 }
 
 // 从感知粗糙度获取高光强度 n = 2.0/pow(pr,4) - 2.0;
@@ -183,6 +186,10 @@ inline half PerceptualRoughnessToSpecPower (half perceptualRoughness)
 // BlinnPhong normalized as normal distribution function (NDF)
 // for use in micro-facet model: spec=D*G*F
 // eq. 19 in https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf
+// 归一化的BlinnPhong 作为 法线分布函数 (NDF) 用于 微面元模型: spec = D * G * F
+// https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf 中的公式19
+// @Remark: [NDFBlinnPhongNormalizedTerm] // DOING
+
 inline half NDFBlinnPhongNormalizedTerm (half NdotH, half n)
 {
     // norm = (n+2)/(2*pi)
@@ -230,6 +237,7 @@ inline float3 Unity_SafeNormalize(float3 inVec)
 // Main Physically Based BRDF // 基于物理的BRDF
 // Derived from Disney work and based on Torrance-Sparrow micro-facet model
 // 派生自迪士尼的工作方式 和 Torrance-Sparrow 的微面元模型
+// @Remark: [DisneyPBR]
 //
 //   BRDF = kD / pi + kS * (D * V * F) / 4
 //   I = BRDF * NdotL
@@ -276,7 +284,7 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
     half nv = saturate(dot(normal, viewDir)); // TODO: this saturate should no be necessary here // TODO: 这个saturate 在这里没有必要
 #else
-    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact  // DOING
+    half nv = abs(dot(normal, viewDir));    // This abs allow to limit artifact  // 这个 abs 允许限制伪影
 #endif
 
     half nl = saturate(dot(normal, light.dir));
@@ -285,21 +293,26 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     half lv = saturate(dot(light.dir, viewDir));
     half lh = saturate(dot(light.dir, halfDir));
 
-    // Diffuse term
+    // Diffuse term // 漫反射项
     half diffuseTerm = DisneyDiffuse(nv, nl, lh, perceptualRoughness) * nl;
 
-    // Specular term
+    // Specular term // 镜面反射项
     // HACK: theoretically we should divide diffuseTerm by Pi and not multiply specularTerm!
     // BUT 1) that will make shader look significantly darker than Legacy ones
     // and 2) on engine side "Non-important" lights have to be divided by Pi too in cases when they are injected into ambient SH
+    // HACK: 理论上 漫反射项应该除 pi ，并且不应该给 高光项乘 pi ，这样做的原因如下：
+    // 1) 如果不这样做会导致着色器看起来比传统的着色器暗得多
+    // 2) 在引擎中看，"Non-important" 的灯被当作 SH 光计算到环境光中的时候，也必须除 pi
     float roughness = PerceptualRoughnessToRoughness(perceptualRoughness);
 #if UNITY_BRDF_GGX
     // GGX with roughtness to 0 would mean no specular at all, using max(roughness, 0.002) here to match HDrenderloop roughtness remapping.
+    // 当 roughness = 0 时 GGX 意味着没有一点高光，这里使用max(roughness,0.002) 来匹配 HDrenderloop 的roughness 重映射
+    // Remark: [HDrenderloop]
     roughness = max(roughness, 0.002);
     half V = SmithJointGGXVisibilityTerm (nl, nv, roughness);
     float D = GGXTerm (nh, roughness);
 #else
-    // Legacy
+    // Legacy // 旧版
     half V = SmithBeckmannVisibilityTerm (nl, nv, roughness);
     half D = NDFBlinnPhongNormalizedTerm (nh, PerceptualRoughnessToSpecPower(perceptualRoughness));
 #endif

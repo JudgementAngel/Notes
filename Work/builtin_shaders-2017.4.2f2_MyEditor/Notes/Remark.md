@@ -338,7 +338,7 @@ half2 ParallaxOffset1Step (half h, half height, half3 viewDir)
 
 ​	迪士尼“原则性”BRDF的高光部分是GGX BRDF。 它使用Roughness参数。 这种Roughness 是“Disney roughness ”，而不是真正的GGX Roughness。 Disney roughness = sqrt(Roughness)。 在运行时使用时，Disney Roughness 会转变为的GGX粗糙度。Roughness = Disney Roughness * Disney Roughness 
 
-​	Unity、Unreal 等引擎的BRDF都使用这种方式计算。 
+​	Unity、Unreal 等引擎的BRDF都使用这种方式计算。Unity 里  PerceptualRoughness 等价于 Unreal 中的roughness
 
 ​	参考： UnityStandardBRDF.cginc 
 
@@ -434,3 +434,151 @@ specPower = max(1e-4f,2.0/max(1e-4f,roughness * roughness)-2.0);
 ```
 
 specPower = PerceptualRoughness
+
+
+
+### [DisneyPBR]
+
+http://blog.selfshadow.com/publications/s2012-shading-course/
+
+http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
+
+https://blog.uwa4d.com/archives/Study_Shading-Disney.html
+
+​	迪士尼基于物理的微面元着色模型，siggraphic 2012 的文章。不同于前人提出的基于物理的材质模型，这篇文章的材质模型在设计之初并不是以物理正确为原则，而是以让美术设计者更容易理解和使用为原则。文章作者认为是否是物理正确并不重要，重要的是能达到美术设计者的需求并且使用方便、容易理解。因此，他们提出了5个主要的设计原则： 
+
+1. 使用方便、便于理解比物理真实更重要；
+2. 可调节参数越少越好；
+3. 参数的值都必须在效果可接受的范围内归一化到（0～1）之间；
+4. 参数可以被赋予超过其实际可接受范围（0～1）之外的值；
+5. 所有参数组合的效果都必须是可接受并且稳定；
+
+
+
+![](Images/Study_ShaderDisney2.png)
+
+​	从上图可以看到，经过对参数的简化，文章提出的材质模型用了11个参数即可非常真实地模拟出金属、非金属以及不同粗糙度的材质光照结果。
+
+​	文章作者基于上述的5个原则以及对真实测量数据的观察结果，对传统的微表面材质模型中的各项函数进行修改。接下来我们首先介绍传统的微表面模型的通用表达式，然后对其中的每一项函数进行说明，并介绍在文章中采用的各项函数的表达式。
+
+​	文章中的模型采用了微表面模型的通用形式，该通用形式最早出现在Cook-Torrance模型中。
+$$
+f(l,v) = diffuse + \frac{D(\theta_h)F(\theta_d)G(\theta_l,\theta_v) }{4cos \theta_l cos \theta_v}
+$$
+​	向量 $l$ 和 $v$ 分别表示入射光和视线方向，向量 $h$ 表示半角向量。它们和法线之间的夹角分别用对应下标的 $\theta$ 表示，$\theta_d$ 则表示 $l$ 和 $v$ 之间夹角的一半。即：$lh$ 或 $vh$ 之间的夹角。$diffuse$ 表示漫反射函数，$D$表示微表面法线分布函数， $F$ 表示菲涅尔系数， $G$表示阴影系数。 BRDF 如下：$diffuse$ 函数：
+$$
+f_d = \frac{baseColor}{\pi}(1+(F_{D90} - 1)(1-cos \theta_l)^5)(1+(F_{D90} - 1)(1-cos \theta_v)^5)
+$$
+
+$$
+F_{D90} = 0.5 + 2cos \theta _d^2 roughness
+$$
+
+$roughness$ 表示粗糙度。
+
+
+
+微表面法线分布函数 $D$ ，这里没有使用GGX，而是使用更为通用的形式GTR (Generalized-Trowbridge-Reitz) :
+$$
+D_{GTR} = c/(\alpha^2cos^2\theta_h + sin^2\theta_h)^\gamma
+$$
+它与GGX的区别是，GGX是上面式子中 $\gamma = 2$ 的结果。迪士尼采用了两个不同的GTR函数来拟合高光项，采用 $\gamma = 1$ 和 $\gamma = 2$ 。 其中 $\alpha = roughness^2$ ， $c$ 是一个常数用于调节整体缩放。
+
+Unity使用的法线分布函数 $D$ 是:
+
+
+$$
+D_{GGX}(h) = \frac{ \alpha^2}{\pi(cos^2\theta_h(\alpha^2-1)+1)^2}
+$$
+
+
+菲涅尔项 $F$ ，采用Schlick 的公式：
+$$
+F_{Schlick} = F_0+(1-F_0)(1-cos\theta_d)^5
+$$
+$F_0$ 是一个常量，其值取决于材质的透射系数。
+
+
+
+几何遮挡项 $G$，采用Walter 在其论文中根据 GGX 推导的 G公式，并将公式中的 $roughness$ 从 [0,1] 缩放到 [0.5,1] ，这个缩放是在粗糙度平方之前。做这个缩放的原因是，根据与实际测量的数据对比以及美术设计者的反馈，高光在 $roughness$ 值较小时显得过于亮。虽然这个缩放的过程使得模型不再物理准确，但是它符合了美术设计者的需求，这也正是这篇文章最主要的设计原则。 
+$$
+G_{GGX} = \frac{2*cos\theta_v}{cos\theta_v+ \sqrt{\alpha^2 + (1-\alpha^2)cos^2\theta_v}}
+$$
+$$
+\alpha = (roughness * 0.5 + 0.5)^2
+$$
+
+Unity 中使用的几何遮挡项 $G$ 是 SmithJointGGX  http://jcgt.org/published/0003/02/03/paper.pdf 原始公式：
+$$
+a = roughness ; a2 = a * a;
+$$
+
+$$
+lambda\_v = \frac{\sqrt{a2 * (1-cos^2\theta_l) / cos^2\theta_l+ 1}-1}{2}
+$$
+
+$$
+lambda\_l = \frac{\sqrt{a2 * (1-cos^2\theta_v) / cos^2\theta_v+ 1}-1}{2}
+$$
+
+$$
+G_{Smith-GGX} = \frac{1}{1+lambda\_v+lambda\_l}
+$$
+
+首先给每个 $lambda$ 加 0.5 来抵消  $G_{Smith-GGX} = \frac{1}{1+lambda\_v+lambda\_l}$ 分母中的 1 。然后给分子分母同时乘  $2cos\theta_lcos\theta_v$ 来进行化简：
+$$
+lambdaV = cos\theta_l \sqrt{a2*(1-cos^2\theta_v) + cos^2\theta_v}
+$$
+
+$$
+lambdaL = cos\theta_v \sqrt{a2*(1-cos^2\theta_l) + cos^2\theta_l}
+$$
+
+在对这个 $lambda$ 继续进行近似优化（UE4使用了同样的公式），因为上述的代码依旧很复杂。考虑到整体的性能，牺牲一部分难以察觉到的精度来提升效率是必要的 ：
+
+
+$$
+lambdaV \approx cos\theta_l * (cos\theta_v*(1-a) + a)
+$$
+
+$$
+lambdaL \approx cos\theta_v * (cos\theta_l*(1-a) + a)
+$$
+
+最后加上 $1e^{-5}​$ 防止分母为 0。
+
+
+
+优化版本：
+$$
+G_{Smith-GGX\_Opt} = \frac{2cos\theta_vcos\theta_l}{lambdaV +lambdaL + 1e^{-5}}
+$$
+将$G$ 项 和 分母 $4cos\theta_l cos\theta_v$ 合并为 $V$ 项：
+$$
+V = \frac{G}{4cos\theta_lcos\theta_v}
+$$
+
+$$
+V = \frac{0.5}{lambdaV + lambdaL + 1e^{-5}}
+$$
+
+
+
+则最终 Unity 中使用的 BRDF1公式，再在上面的基础上做了一些HACK：
+
+理论上 漫反射项应该除 pi ，并且不应该给 高光项乘 pi ，这样做的原因如下：
+
+​	1) 如果不这样做会导致着色器看起来比传统的着色器暗得多；2) 在引擎中看，"Non-important" 的灯被当作 SH 光计算到环境光中的时候，也必须除 pi
+
+
+
+### [HDrenderloop]
+
+​	TODO
+
+
+
+### [NDFBlinnPhongNormalizedTerm]
+
+ TODO
+
