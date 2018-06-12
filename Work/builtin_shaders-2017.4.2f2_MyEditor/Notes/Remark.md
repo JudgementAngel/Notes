@@ -199,7 +199,26 @@ https://en.wikipedia.org/wiki/Deferred_shading
 
 ​	用该矩阵的转置矩阵和切空间法线向量相乘正好就是float3（worldTangent * tangentNormal.x ,worldBinormal * tangentNormal.y,worldNormal * tangentNormal.z）;
 
+​	上面的三个变量需要 3x3 的空间即可存储，所以
 
+```c++
+float3(tangentToWorld[0].w,tangentToWorld[1].w,tangentToWorld[2].w)
+```
+
+​	在ForwardBase中，会根据需要将 存储 切空间的视向量 或者顶点在世界空间的位置，在ForwardAdd中，会存储 世界空间的灯光向量。
+
+
+
+###[TEXCOORD]
+
+​	TEXCOORD0 语义可以用来传输数据，但是最多存储float4的数据， 如果传递的是float4x4 , float3x3 的矩阵数据 或者 float4 **[3] ，会自动向后扩展。例如： 
+
+```C
+float4 tangentToWorld[3] : TEXCOORD0; // 这里指明的是TEXCOORD0,但实际，TEXCOORD1 和 TEXCOORD2 也被占用，float3x3 和 float4x4同理
+float4 normal:TEXCOORD3; // 这里就要使用TEXCOORD3，如果使用TEXCOORD1或TEXCOORD2会报错
+```
+
+​	SM2.0 最多到 TEXCOORD7 ,使用TEXCOORD8 需要指定SM3.0 。
 
 ###[ParallaxMap]
 
@@ -433,8 +452,6 @@ roughness = perceptuaRoughness * perceptuaRoughness;
 specPower = max(1e-4f,2.0/max(1e-4f,roughness * roughness)-2.0);
 ```
 
-specPower = PerceptualRoughness
-
 
 
 ### [DisneyPBR]
@@ -580,5 +597,60 @@ $$
 
 ### [NDFBlinnPhongNormalizedTerm]
 
- TODO
+$$
+L_{o}(\mathbf{v}) = (\mathbf{c}_{diff} + \pi \mathbf{c}_{spec}(\mathbf{n} \cdot \mathbf{h})^{e}) \otimes \mathbf{c}_{light}(\mathbf{n}\cdot \mathbf{l_c})
+$$
 
+$$
+e = \frac{2}{roughness^2} - 2
+$$
+
+$$
+D_{Blinn}(w_m) = (w_n \cdot w_m)^e
+$$
+
+传统的Blinn-Phong 并不是真实的法线分布，上面的公式也不满足能量守恒定律（$D$需要满足$w_m$在半球面上积分为1，Blinn-Phong还需要乘一个常量 $\frac{e+2}{2\pi}$ 才能满足这个条件）。
+
+```c++
+// 计算镜面反射强度
+float e = 2 / roughness * roughness - 2;
+float NdotH = dot(normal,Wm); // Wm = normalize(Wo + Wi) // 半角向量
+//float normTerm = (n+2)/(2*pi);
+float normTerm = (n+2)*(0.5/pi);
+float specularIntensity = pow(saturate(NdotH),e) * normTerm;
+```
+
+
+### [NaN]
+
+**NaN**（**N**ot **a** **N**umber，非数）是[计算机科学](https://zh.wikipedia.org/wiki/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6)中数值[数据类型](https://zh.wikipedia.org/wiki/%E6%95%B8%E6%93%9A%E9%A1%9E%E5%9E%8B)的一类值，表示未定义或不可表示的值。常在[浮点数](https://zh.wikipedia.org/wiki/%E6%B5%AE%E7%82%B9%E6%95%B0)运算中使用。首次引入NaN的是1985年的[IEEE 754](https://zh.wikipedia.org/wiki/IEEE_754)浮点数标准。 
+
+返回NaN的运算有如下三种 :
+
+​	操作数中至少有一个是NaN的运算;
+
+​	未定义操作 :
+
+​		下列[除法](https://zh.wikipedia.org/wiki/%E9%99%A4%E6%B3%95)运算：[0/0](https://zh.wikipedia.org/wiki/0/0)、[∞](https://zh.wikipedia.org/wiki/%E2%88%9E)/∞、∞/−∞、−∞/∞、−∞/−∞
+
+​		下列[乘法](https://zh.wikipedia.org/wiki/%E4%B9%98%E6%B3%95)运算：0×∞、0×-∞
+
+​		下列[加法](https://zh.wikipedia.org/wiki/%E5%8A%A0%E6%B3%95)运算：∞ + (−∞)、(−∞) + ∞
+
+​		下列[减法](https://zh.wikipedia.org/wiki/%E5%87%8F%E6%B3%95)运算：∞ - ∞、(−∞) - (−∞)
+
+​	产生[复数](https://zh.wikipedia.org/wiki/%E5%A4%8D%E6%95%B0_(%E6%95%B0%E5%AD%A6))结果的实数运算。例如： 
+
+​		对负数进行[开偶次方](https://zh.wikipedia.org/wiki/%E9%96%8B%E6%96%B9)的运算
+
+​		对负数进行[对数](https://zh.wikipedia.org/wiki/%E5%AF%B9%E6%95%B0)运算
+
+​		对比-1小或比+1大的数进行[反正弦](https://zh.wikipedia.org/wiki/%E5%8F%8D%E6%AD%A3%E5%BC%A6)或[反余弦](https://zh.wikipedia.org/wiki/%E5%8F%8D%E9%A4%98%E5%BC%A6)运算
+
+
+
+### [SurfaceReduction]
+
+surfaceReduction = Int D(NdotH) * NdotH * Id(NdotL>0) dH = 1/(roughness^2+1)
+
+TODO

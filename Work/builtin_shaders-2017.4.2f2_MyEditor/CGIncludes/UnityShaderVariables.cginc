@@ -99,9 +99,12 @@ CBUFFER_END
 // ----------------------------------------------------------------------------
 
 CBUFFER_START(UnityLighting)
-
+    
+    // _WorldSpaceLightPos0 (float4) Directional lights: (world space direction, 0). Other lights: (world space position, 1).
+    // _WorldSpaceLightPos0 这个参数是float4 类型变量，如果是Directional灯光:float4(灯光在世界中的位置,0)，其他灯光:float4(灯光在世界中的位置,1);
+    // 一般使用 _WorldSpaceLightPos0.xyz - posWorld.xyz * _WorldSpaceLightPos0.w 来获取真正要在着色中使用的灯光
     #ifdef USING_DIRECTIONAL_LIGHT
-    half4 _WorldSpaceLightPos0;
+    half4 _WorldSpaceLightPos0; 
     #else
     float4 _WorldSpaceLightPos0;
     #endif

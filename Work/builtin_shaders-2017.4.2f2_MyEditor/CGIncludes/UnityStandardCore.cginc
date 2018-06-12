@@ -427,7 +427,7 @@ struct VertexOutputForwardBase
     UNITY_POSITION(pos);                                  // 位置
     float4 tex                            : TEXCOORD0;    // 纹理坐标
     float3 eyeVec                         : TEXCOORD1;
-    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos] // [3x3: 用于计算 TangentToWorld 的数组 | 1x3: 用于计算视差贴图的视向量 或 世界空间顶点位置] // @Remark: [tangentToWorld]
+    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos] // [3x3: 用于计算 TangentToWorld 的数组 | 1x3: 用于计算视差贴图的视向量 或 世界空间顶点位置] // @Remark: [tangentToWorld] // @Remark: [TEXCOORD]
     half4 ambientOrLightmapUV             : TEXCOORD5;    // SH or Lightmap UV // SH 灯光 或者 灯光贴图UV
     UNITY_SHADOW_COORDS(6)                                // 阴影坐标
     UNITY_FOG_COORDS(7)                                   // 雾坐标
@@ -521,11 +521,12 @@ half4 fragForwardBaseInternal (VertexOutputForwardBase i)
     half occlusion = Occlusion(i.tex.xy); // 获取环境光遮蔽
     UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, mainLight); // 获取全局光照GI
 
+    // 根据BRDF计算着色
     half4 c = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect);
     c.rgb += Emission(i.tex.xy); // 加上自发光的效果
 
     UNITY_APPLY_FOG(i.fogCoord, c.rgb);
-    return OutputForward (c, s.alpha);
+    return OutputForward (c, s.alpha); // 最终输出对Alpha做处理
 }
 
 // Forward Base 的 Fragment 着色程序
@@ -536,18 +537,20 @@ half4 fragForwardBase (VertexOutputForwardBase i) : SV_Target   // backward comp
 
 // ------------------------------------------------------------------
 //  Additive forward pass (one light per pass)
+//  Additive 前向Pass (每个Pass计算一次灯光)
 
 struct VertexOutputForwardAdd
 {
-    UNITY_POSITION(pos);
-    float4 tex                          : TEXCOORD0;
-    float3 eyeVec                       : TEXCOORD1;
-    float4 tangentToWorldAndLightDir[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:lightDir]
-    float3 posWorld                     : TEXCOORD5;
-    UNITY_SHADOW_COORDS(6)
-    UNITY_FOG_COORDS(7)
+    UNITY_POSITION(pos);                                // 位置
+    float4 tex                          : TEXCOORD0;    // 纹理坐标
+    float3 eyeVec                       : TEXCOORD1;    // 视向量，从摄像机指向顶点
+    float4 tangentToWorldAndLightDir[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:lightDir] // [3x3: 用于计算 TangentToWorld 的数组 | 1x3:世界空间灯光方向 ] // @Remark: [tangentToWorld]
+    float3 posWorld                     : TEXCOORD5;    // 世界空间位置
+    UNITY_SHADOW_COORDS(6)                              // 阴影坐标
+    UNITY_FOG_COORDS(7)                                 // 雾坐标
 
     // next ones would not fit into SM2.0 limits, but they are always for SM3.0+
+    // 下一个 DOING
 #if defined(_PARALLAXMAP)
     half3 viewDirForParallax            : TEXCOORD8;
 #endif
@@ -584,7 +587,7 @@ VertexOutputForwardAdd vertForwardAdd (VertexInput v)
     //We need this for shadow receiving
     UNITY_TRANSFER_SHADOW(o, v.uv1);
 
-    float3 lightDir = _WorldSpaceLightPos0.xyz - posWorld.xyz * _WorldSpaceLightPos0.w;
+    float3 lightDir = _WorldSpaceLightPos0.xyz - posWorld.xyz * _WorldSpaceLightPos0.w; // 获取世界空间灯光方向
     #ifndef USING_DIRECTIONAL_LIGHT
         lightDir = NormalizePerVertexNormal(lightDir);
     #endif

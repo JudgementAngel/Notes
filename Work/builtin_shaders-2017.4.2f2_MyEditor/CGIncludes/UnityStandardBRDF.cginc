@@ -9,6 +9,7 @@
 
 //-----------------------------------------------------------------------------
 // Helper to convert smoothness to roughness
+// 转化光滑度到粗糙度的帮助函数
 //-----------------------------------------------------------------------------
 
 float PerceptualRoughnessToRoughness(float perceptualRoughness)
@@ -188,7 +189,7 @@ inline half PerceptualRoughnessToSpecPower (half perceptualRoughness)
 // eq. 19 in https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf
 // 归一化的BlinnPhong 作为 法线分布函数 (NDF) 用于 微面元模型: spec = D * G * F
 // https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf 中的公式19
-// @Remark: [NDFBlinnPhongNormalizedTerm] // DOING
+// @Remark: [NDFBlinnPhongNormalizedTerm]
 
 inline half NDFBlinnPhongNormalizedTerm (half NdotH, half n)
 {
@@ -317,19 +318,23 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     half D = NDFBlinnPhongNormalizedTerm (nh, PerceptualRoughnessToSpecPower(perceptualRoughness));
 #endif
 
-    half specularTerm = V*D * UNITY_PI; // Torrance-Sparrow model, Fresnel is applied later
+    half specularTerm = V*D * UNITY_PI; // Torrance-Sparrow model, Fresnel is applied later // Torrance_Sparrow 光照模型，Fresnel 稍后应用
 
+    // Gamma 矫正
 #   ifdef UNITY_COLORSPACE_GAMMA
         specularTerm = sqrt(max(1e-4h, specularTerm));
 #   endif
 
     // specularTerm * nl can be NaN on Metal in some cases, use max() to make sure it's a sane value
+    // 高光项 * nl 在金属上的某些情况下 可能会变为 NaN ，使用 max() 函数来确保它是一个合理的数值
+    // @Remark: [NaN]
     specularTerm = max(0, specularTerm * nl);
 #if defined(_SPECULARHIGHLIGHTS_OFF)
     specularTerm = 0.0;
 #endif
 
     // surfaceReduction = Int D(NdotH) * NdotH * Id(NdotL>0) dH = 1/(roughness^2+1)
+    // @Remark: [SurfaceReduction]
     half surfaceReduction;
 #   ifdef UNITY_COLORSPACE_GAMMA
         surfaceReduction = 1.0-0.28*roughness*perceptualRoughness;      // 1-0.28*x^3 as approximation for (1/(x^4+1))^(1/2.2) on the domain [0;1]
@@ -338,8 +343,10 @@ half4 BRDF1_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 #   endif
 
     // To provide true Lambert lighting, we need to be able to kill specular completely.
+    // 为了提供真正的Lambert 照明，我们需要能够完全去除镜面反射
     specularTerm *= any(specColor) ? 1.0 : 0.0;
 
+    // @Remark: [GrazingTerm]
     half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
     half3 color =   diffColor * (gi.diffuse + light.color * diffuseTerm)
                     + specularTerm * light.color * FresnelTerm (specColor, lh)
