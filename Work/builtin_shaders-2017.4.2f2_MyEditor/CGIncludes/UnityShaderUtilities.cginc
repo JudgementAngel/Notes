@@ -8,9 +8,11 @@
 #include "UnityShaderVariables.cginc"
 
 // Tranforms position from object to homogenous space
+// 从模型空间转换到齐次空间
 inline float4 UnityObjectToClipPos(in float3 pos)
 {
     // More efficient than computing M*VP matrix product
+    // 比计算M*VP矩阵跟高效 // @TODO: ?
     return mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(pos, 1.0)));
 }
 inline float4 UnityObjectToClipPos(float4 pos) // overload for float4; avoids "implicit truncation" warning for existing shaders

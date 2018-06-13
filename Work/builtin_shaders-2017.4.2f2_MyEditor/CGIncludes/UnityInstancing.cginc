@@ -1,6 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-// @Remark: [UnityInstancing]
+// @Remark: [UnityInstancing][STEREO]
 #ifndef UNITY_INSTANCING_INCLUDED
 #define UNITY_INSTANCING_INCLUDED
 
@@ -112,7 +112,7 @@
 
 ////////////////////////////////////////////////////////
 // basic stereo instancing setups
-// - UNITY_VERTEX_OUTPUT_STEREO             Declare stereo target eye field in vertex shader output struct.
+// - UNITY_VERTEX_OUTPUT_STEREO             Declare stereo target eye field in vertex shader output struct. // 在顶点着色器输出结构中声明目标的立体眼场。用于VR渲染，左眼和右眼
 // - UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO  Assign the stereo target eye.
 // - UNITY_TRANSFER_VERTEX_OUTPUT_STEREO    Copy stero target from input struct to output struct. Used in vertex shader.
 // - UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX

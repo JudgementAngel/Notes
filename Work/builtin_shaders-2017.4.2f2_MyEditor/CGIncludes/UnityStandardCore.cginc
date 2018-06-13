@@ -442,7 +442,7 @@ struct VertexOutputForwardBase
 
     // 为该顶点设置一个实例化的ID，这么做是为了实现 GPU Instancing
     UNITY_VERTEX_INPUT_INSTANCE_ID
-    // 在顶点着色器输出结构中声明目标视线区域
+    // 在顶点着色器输出结构中声明目标的立体眼场，左眼和右眼，用于VR渲染，防止渲染两遍
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
@@ -550,23 +550,26 @@ struct VertexOutputForwardAdd
     UNITY_FOG_COORDS(7)                                 // 雾坐标
 
     // next ones would not fit into SM2.0 limits, but they are always for SM3.0+
-    // 下一个 DOING
+    // 下一个不适合SM2.0的限制，但是他始终在SM3.0+下执行。
 #if defined(_PARALLAXMAP)
     half3 viewDirForParallax            : TEXCOORD8;
 #endif
 
+    // 在顶点着色器输出结构中声明目标的立体眼场，左眼和右眼，用于VR渲染，防止渲染两遍
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
+// ForwardAdd 的Vertex 程序
 VertexOutputForwardAdd vertForwardAdd (VertexInput v)
 {
+    // @Remark: [UnityInstancing][STEREO]
     UNITY_SETUP_INSTANCE_ID(v);
     VertexOutputForwardAdd o;
     UNITY_INITIALIZE_OUTPUT(VertexOutputForwardAdd, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-    float4 posWorld = mul(unity_ObjectToWorld, v.vertex);
-    o.pos = UnityObjectToClipPos(v.vertex);
+    float4 posWorld = mul(unity_ObjectToWorld, v.vertex); // 世界空间顶点位置
+    o.pos = UnityObjectToClipPos(v.vertex); // MVP矩阵变换 / DOING
 
     o.tex = TexCoords(v);
     o.eyeVec = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos);
