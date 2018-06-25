@@ -171,9 +171,11 @@ half3 BlendNormals(half3 n1, half3 n2)
     return normalize(half3(n1.xy + n2.xy, n1.z*n2.z));
 }
 
+// 计算切空间到世界转换使用的数组
 half3x3 CreateTangentToWorldPerVertex(half3 normal, half3 tangent, half tangentSign)
 {
     // For odd-negative scale transforms we need to flip the sign
+    // 对于奇数 - 负数的缩放变换，我们需要翻转符号
     half sign = tangentSign * unity_WorldTransformParams.w;
     half3 binormal = cross(normal, tangent) * sign;
     return half3x3(tangent, binormal, normal);

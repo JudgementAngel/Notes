@@ -613,11 +613,13 @@
 #endif
 
 
-// Declare position that is also available for read in fragment shader
+// Declare position that is also available for read in fragment shader 
+// 声明在Fragment shader 中可用于读写的 位置信息
 #if defined(SHADER_API_PSP2) && defined(SHADER_STAGE_FRAGMENT) && SHADER_TARGET >= 30
 #define UNITY_POSITION(pos) float4 pos : VPOS
 #else
 // On D3D reading screen space coordinates from fragment shader requires SM3.0
+// 在 D3D 上从Fragment Shader 中读取屏幕空间坐标需要SM3.0
 #define UNITY_POSITION(pos) float4 pos : SV_POSITION
 #endif
 

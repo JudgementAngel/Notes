@@ -477,7 +477,7 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
     #ifdef _TANGENT_TO_WORLD
         float4 tangentWorld = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
 
-        float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWorld, tangentWorld.xyz, tangentWorld.w);
+        float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWorld, tangentWorld.xyz, tangentWorld.w); // 计算切空间到世界空间变换用的数组
         o.tangentToWorldAndPackedData[0].xyz = tangentToWorld[0];
         o.tangentToWorldAndPackedData[1].xyz = tangentToWorld[1];
         o.tangentToWorldAndPackedData[2].xyz = tangentToWorld[2];
@@ -559,7 +559,7 @@ struct VertexOutputForwardAdd
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-// ForwardAdd 的Vertex 程序
+// Forward Add 的Vertex 程序
 VertexOutputForwardAdd vertForwardAdd (VertexInput v)
 {
     // @Remark: [UnityInstancing][STEREO]
@@ -569,12 +569,12 @@ VertexOutputForwardAdd vertForwardAdd (VertexInput v)
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
     float4 posWorld = mul(unity_ObjectToWorld, v.vertex); // 世界空间顶点位置
-    o.pos = UnityObjectToClipPos(v.vertex); // MVP矩阵变换 / DOING
+    o.pos = UnityObjectToClipPos(v.vertex); // MVP矩阵变换 
 
-    o.tex = TexCoords(v);
-    o.eyeVec = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos);
+    o.tex = TexCoords(v); // 求纹理坐标
+    o.eyeVec = NormalizePerVertexNormal(posWorld.xyz - _WorldSpaceCameraPos); // 摄像机指向顶点的向量
     o.posWorld = posWorld.xyz;
-    float3 normalWorld = UnityObjectToWorldNormal(v.normal);
+    float3 normalWorld = UnityObjectToWorldNormal(v.normal); 
     #ifdef _TANGENT_TO_WORLD
         float4 tangentWorld = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
 
@@ -587,7 +587,8 @@ VertexOutputForwardAdd vertForwardAdd (VertexInput v)
         o.tangentToWorldAndLightDir[1].xyz = 0;
         o.tangentToWorldAndLightDir[2].xyz = normalWorld;
     #endif
-    //We need this for shadow receiving
+    // We need this for shadow receiving
+    // 我们需要这个来接受阴影
     UNITY_TRANSFER_SHADOW(o, v.uv1);
 
     float3 lightDir = _WorldSpaceLightPos0.xyz - posWorld.xyz * _WorldSpaceLightPos0.w; // 获取世界空间灯光方向
@@ -607,50 +608,54 @@ VertexOutputForwardAdd vertForwardAdd (VertexInput v)
     return o;
 }
 
+// Forward Add 的 Fragment 内部程序
 half4 fragForwardAddInternal (VertexOutputForwardAdd i)
 {
-    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy);
+    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy); // 应用抖动的交叉淡入淡出
 
-    FRAGMENT_SETUP_FWDADD(s)
+    FRAGMENT_SETUP_FWDADD(s) // 获取 Fragmentdata 数据 Add和Base的区别是worldPos 和 tangentViewDir输入的区别
 
-    UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld)
-    UnityLight light = AdditiveLight (IN_LIGHTDIR_FWDADD(i), atten);
-    UnityIndirect noIndirect = ZeroIndirect ();
+    UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld) // 获取灯光衰减
+    UnityLight light = AdditiveLight (IN_LIGHTDIR_FWDADD(i), atten); // 获取灯光参数
+    UnityIndirect noIndirect = ZeroIndirect (); // Add不考虑间接光
 
     half4 c = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, light, noIndirect);
 
-    UNITY_APPLY_FOG_COLOR(i.fogCoord, c.rgb, half4(0,0,0,0)); // fog towards black in additive pass
-    return OutputForward (c, s.alpha);
+    UNITY_APPLY_FOG_COLOR(i.fogCoord, c.rgb, half4(0,0,0,0)); // fog towards black in additive pass // Add pass 中雾的背景是黑色
+    return OutputForward (c, s.alpha); // 最后输出，处理Alpha
 }
 
-half4 fragForwardAdd (VertexOutputForwardAdd i) : SV_Target     // backward compatibility (this used to be the fragment entry function)
+// Fragment Add 的 Fragement 程序入口
+half4 fragForwardAdd (VertexOutputForwardAdd i) : SV_Target     // backward compatibility (this used to be the fragment entry function) // 向后兼容性（以前是片段入口函数）
 {
     return fragForwardAddInternal(i);
 }
 
 // ------------------------------------------------------------------
 //  Deferred pass
+// @Remark: [DeferredPass]
 
 struct VertexOutputDeferred
 {
     UNITY_POSITION(pos);
-    float4 tex                            : TEXCOORD0;
-    float3 eyeVec                         : TEXCOORD1;
-    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos]
-    half4 ambientOrLightmapUV             : TEXCOORD5;    // SH or Lightmap UVs
+    float4 tex                            : TEXCOORD0;    // 纹理坐标
+    float3 eyeVec                         : TEXCOORD1;    // 视向量，从摄像机指向顶点
+    float4 tangentToWorldAndPackedData[3] : TEXCOORD2;    // [3x3:tangentToWorld | 1x3:viewDirForParallax or worldPos] // [3x3: 用于计算 TangentToWorld 的数组 | 1x3: 用于计算视差贴图的视向量 或 世界空间顶点位置] // @Remark: [tangentToWorld] // @Remark: [TEXCOORD]
+    half4 ambientOrLightmapUV             : TEXCOORD5;    // SH or Lightmap UVs // 存放SH光照结果 或灯光贴图UV
 
+    // 需要在Fragement中使用World Pos 并且没有把World Pos 打包在 Tangent 中 
     #if UNITY_REQUIRE_FRAG_WORLDPOS && !UNITY_PACK_WORLDPOS_WITH_TANGENT
-        float3 posWorld                     : TEXCOORD6;
+        float3 posWorld                     : TEXCOORD6;  // 世界空间顶点坐标
     #endif
 
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-
+// Deferred 的Vertex Shader 入口程序
 VertexOutputDeferred vertDeferred (VertexInput v)
 {
-    UNITY_SETUP_INSTANCE_ID(v);
-    VertexOutputDeferred o;
+    UNITY_SETUP_INSTANCE_ID(v); // 设置顶点实例化ID // @Remark: [UnityInstancing]
+    VertexOutputDeferred o; // DOING
     UNITY_INITIALIZE_OUTPUT(VertexOutputDeferred, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 

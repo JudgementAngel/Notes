@@ -662,3 +662,9 @@ float specularIntensity = pow(saturate(NdotH),e) * normTerm;
 surfaceReduction = Int D(NdotH) * NdotH * Id(NdotL>0) dH = 1/(roughness^2+1)
 
 TODO
+
+
+
+### [DeferredPass]
+
+TODO
