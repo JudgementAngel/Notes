@@ -205,7 +205,7 @@ struct FragmentCommonData
     // Most of the math is being done on these (1-x) values, and that saves a few precious ALU slots.
     // 大多数的数学运算都是使用这些(1-x)的值，这样就能节省一些ALU（逻辑运算单元）的资源。
     // @Remark:[smoothness&oneMinusReflectivity]
-    half oneMinusReflectivity, smoothness; // 简化版1-反射率，光泽度
+    half oneMinusReflectivity, smoothness; // 简化版1-反射率，应该是 perceptual Smoothness 感知光泽度，即 1 - perceptual Roughness
     float3 normalWorld; // 世界空间法线
     float3 eyeVec; // 视向量，从摄像机指向顶点
     half alpha; // alpha透明度
@@ -655,11 +655,11 @@ struct VertexOutputDeferred
 VertexOutputDeferred vertDeferred (VertexInput v)
 {
     UNITY_SETUP_INSTANCE_ID(v); // 设置顶点实例化ID // @Remark: [UnityInstancing]
-    VertexOutputDeferred o; // DOING
+    VertexOutputDeferred o; 
     UNITY_INITIALIZE_OUTPUT(VertexOutputDeferred, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-    float4 posWorld = mul(unity_ObjectToWorld, v.vertex);
+    float4 posWorld = mul(unity_ObjectToWorld, v.vertex); // 计算世界空间位置坐标
     #if UNITY_REQUIRE_FRAG_WORLDPOS
         #if UNITY_PACK_WORLDPOS_WITH_TANGENT
             o.tangentToWorldAndPackedData[0].w = posWorld.x;
@@ -735,6 +735,7 @@ void fragDeferred (
     FRAGMENT_SETUP(s)
 
     // no analytic lights in this pass
+    // 不计算灯光
     UnityLight dummyLight = DummyLight ();
     half atten = 1;
 
@@ -779,6 +780,7 @@ void fragDeferred (
 
 //
 // Old FragmentGI signature. Kept only for backward compatibility and will be removed soon
+// 旧的FragmentGI 签名。 只保留向后兼容性，并将很快被删除
 //
 
 inline UnityGI FragmentGI(
@@ -788,6 +790,7 @@ inline UnityGI FragmentGI(
     bool reflections)
 {
     // we init only fields actually used
+    // 我们只初始化实际使用的字段
     FragmentCommonData s = (FragmentCommonData)0;
     s.smoothness = smoothness;
     s.normalWorld = normalWorld;

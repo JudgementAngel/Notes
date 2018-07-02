@@ -137,6 +137,14 @@ https://docs.unity3d.com/Manual/RenderTech-DeferredShading.html
 
 https://en.wikipedia.org/wiki/Deferred_shading
 
+https://www.cnblogs.com/polobymulberry/p/5126892.html
+
+https://blog.csdn.net/BugRunner/article/details/7436600
+
+​	Deferred Rendering （延迟渲染） 顾名思义，就是将光照处理这一步骤延迟一段时间。具体做法是将光照处理这一步放在三维物体生成二维图片之后进行处理。也就是在屏幕空间进行光照处理。要做到这一步，需要一个重要的辅助工具--G-Buffer。
+
+​	G-Buffer 主要用来存储每个像素对应的Position、Normal、Diffuse Color、Specular Color 、Emission Color和其他的Material Parameters 。根据这些信息我们就可以在屏幕空间进行光照处理。
+
 ​	使用延迟着色时，对可影响游戏对象的灯光数量没有限制。所有的灯都是以像素为单位计算的，这意味着所有灯光都可以使用法线贴图渲染。此外，所有的灯光都可以有Cookies（灯光效果遮罩）和阴影。
 
 ​	延迟着色的优点是，照明的处理开销与光照射的像素数量呈正比。这由场景中的灯光数量决定，无论它照亮多少个GameObjects。因此，通过减少灯光可以提高性能。延迟着色也具有高度一致性和可预测的行为。影响每个灯光的效果是逐像素计算的，所以没有在较大的三角面分解的照明计算。？
@@ -166,7 +174,7 @@ https://en.wikipedia.org/wiki/Deferred_shading
 - RT0, ARGB32 format: Diffuse color (RGB), occlusion (A).
 - RT1, ARGB32 format: Specular color (RGB), roughness (A).
 - RT2, ARGB2101010 format: World space normal (RGB), unused (A).
-- RT3, ARGB2101010 (non-HDR) or ARGBHalf (HDR) format: Emission + lighting + lightmaps + reflection probes buffer.
+- RT3, ARGB2101010 (HDR) or ARGBHalf (non-HDR) format: Emission + lighting + lightmaps + reflection probes buffer.
 - Depth+Stencil buffer.
 
 所以默认的g-buffer布局是 160bits/pixel(非HDR) 或 192bits/pixel (HDR)
@@ -667,4 +675,32 @@ TODO
 
 ### [DeferredPass]
 
-TODO
+​	这里的Deferred Pass 只是为了计算 G-Buffer的数据，也就是 UnityStandardData 这个结构体里数据，然后使用 UnityStandardDataToGbuffer 这个函数将UnityStandardData 的数据转化为 G-Buffer 里的数据。
+
+​	G-Buffer中的数据如下：
+
+```C
+// 这四个变量表示四张贴图
+half4 outGBuffer0 : SV_Target0,	//Diffuse(rgb),Occlusion(a) // ARGB32
+half4 outGBuffer1 : SV_Target1, //Specular(rgb),Roughness(a) // ARGB32
+half4 outGBuffer2 : SV_Target2, //WorldSpaceNormal(rgb),unused(a) //ARGB 2101010
+half4 outEmission : SV_Target3,	//emission + lighting + lightmaps + reflection probes (rgb), unused (a) // HDR的情况下是ARGB2101010,非HDR是 ARGBHalf
+// 注：为了减少显存和渲染开销。当前场景的摄像机开启了HDR模式时，RT3将不会被创建。而是直接使用摄像机的HDR RT。
+Depth + Stencil buffer // 深度和模板缓冲，8bit+8bit
+
+// 所以默认的g-buffer，每个屏幕像素占 
+// 32(0)+32(1)+32(2)+16(3)+16(ds)+32(这个是像素显示的颜色,color) 160bits/pixel(非HDR) 
+// 或 32(0)+32(1)+32(2)+32(3)+16(ds)+32(color) 192bits/pixel (HDR)
+   
+// 如果使用 ShadowMask 或 Distance ShadowMask 模式来处理混合灯光则使用第五个变量
+half4 outShadowMask : SV_Target4 //shadowmask (rgba) //ARGB32
+// 所以真实的 g-buffer，每个屏幕像素占 
+// 32(0)+32(1)+32(2)+16(3)+32(4)+16(ds)+32(color) 192bits/pixel(非HDR) 
+// 或 32(0)+32(1)+32(2)+32(3)+32(4)+16(ds)+32(color) 224bits/pixel (HDR)
+```
+
+​	我们编写的Shader只是用来生成 G-Buffer的数据，而G-Buffer的数据是在Unity的默认延迟渲染Shader中使用的，这个Shader可以在 (2017.4.2)"Edit->Project Settings->Graphics->Built-in Shader Settings->Deferred / Deferred Reflections "中设置，默认是使用 Built-in Shader , Built-in Shader 可以从Unity 官方文档中查到：
+
+Internal-DeferredShading.shader 和 Internal-DeferredReflections.shader 。
+
+​	Standard Shader 在这里计算数据的时候使用的是一个亮度为0 的灯光，只是为了获取G-Buffer 所需数据。

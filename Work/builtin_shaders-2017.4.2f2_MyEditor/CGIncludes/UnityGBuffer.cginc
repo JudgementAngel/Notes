@@ -5,32 +5,38 @@
 
 //-----------------------------------------------------------------------------
 // Main structure that store the data from the standard shader (i.e user input)
+// 存储来自标准着色器（即：用户输入）数据的主要结构体
 struct UnityStandardData
 {
-    half3   diffuseColor;
-    half    occlusion;
+    half3   diffuseColor;       // 漫反射颜色
+    half    occlusion;          // 环境光遮罩
 
-    half3   specularColor;
-    half    smoothness;
+    half3   specularColor;      // 高光颜色
+    half    smoothness;         // 感知光泽度
 
-    float3  normalWorld;        // normal in world space
+    float3  normalWorld;        // normal in world space // 世界空间的法线
 };
 
 //-----------------------------------------------------------------------------
 // This will encode UnityStandardData into GBuffer
+// 这个函数将 UntiyStandardData 编码进 GBuffer
 void UnityStandardDataToGbuffer(UnityStandardData data, out half4 outGBuffer0, out half4 outGBuffer1, out half4 outGBuffer2)
 {
     // RT0: diffuse color (rgb), occlusion (a) - sRGB rendertarget
+    // RT0: 漫反射颜色 (rgb) , 环境光遮罩(a) - RenderTarget 使用sRGB 
     outGBuffer0 = half4(data.diffuseColor, data.occlusion);
 
     // RT1: spec color (rgb), smoothness (a) - sRGB rendertarget
+    // RT1: 高光反射颜色 (rgb) , 感知光泽度(a) - RenderTarget 使用sRGB 
     outGBuffer1 = half4(data.specularColor, data.smoothness);
 
     // RT2: normal (rgb), --unused, very low precision-- (a)
+    // RT2: 世界空间法线信息(rgb) , 未使用A通道，并且A通道精度很低只有2bits (a) 
     outGBuffer2 = half4(data.normalWorld * 0.5f + 0.5f, 1.0f);
 }
 //-----------------------------------------------------------------------------
 // This decode the Gbuffer in a UnityStandardData struct
+
 UnityStandardData UnityStandardDataFromGbuffer(half4 inGBuffer0, half4 inGBuffer1, half4 inGBuffer2)
 {
     UnityStandardData data;
