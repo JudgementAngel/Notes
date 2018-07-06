@@ -169,5 +169,20 @@ rcp(x) 返回 1/x，这种方法计算倒数更加高效快速近似，不过这个函数只在SM5.0上支持
  
 ColorMask 14是屏蔽 A通道输出，15是RGBA
 
+Shader重映射算法，将Val从iMin-iMax映射到:
+inline float Remap(float Val,float iMin,float iMax,float oMin,float oMax){
+    return oMin +  (Val-iMin)*(oMax-oMin) /  (iMax-iMin+ 1e-5f) ;
+}
+
+通用溶解实现
+dissolveAmount 是输入的值[0-1];reference 是参考的贴图值;
+width 是溶解边缘宽度 1;hardness 是溶解边缘硬度 1.5;
+dissolveEdge 是最终输出用于插值颜色的值。
+```
+realDissolveAmount = Remap(1-dissolveAmount,0,1,-0.1,1.1);
+clip(realDissolveAmount - reference);
+dissolveEdge = 1 - saturate(Remap(realDissolveAmount - reference,0,width*0.1,-hardness,hardness));
+
+
 02083963555
 13686985677
