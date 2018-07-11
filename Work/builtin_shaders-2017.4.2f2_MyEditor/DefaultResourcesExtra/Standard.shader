@@ -198,6 +198,7 @@ Shader "Standard"
         // ------------------------------------------------------------------
         // Extracts information for lightmapping, GI (emission, albedo, ...)
         // This pass it not used during regular rendering.
+        // 这个Pass，在常规渲染中不启用
         Pass
         {
             Name "META"

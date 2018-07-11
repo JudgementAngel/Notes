@@ -507,9 +507,9 @@ VertexOutputForwardBase vertForwardBase (VertexInput v)
 // Forward Base 的 Fragment 着色内部程序
 half4 fragForwardBaseInternal (VertexOutputForwardBase i)
 {
-    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy); // 应用抖动的交叉淡入淡出
+    UNITY_APPLY_DITHER_CROSSFADE(i.pos.xy); // 应用交叉防抖动淡入淡出
 
-    FRAGMENT_SETUP(s) // 获取 Fragmentdata 数据
+    FRAGMENT_SETUP(s) // 获取 FragmentCommonData 数据
 
     // @TODO : GPU Instance 用到的ID
     UNITY_SETUP_INSTANCE_ID(i);
