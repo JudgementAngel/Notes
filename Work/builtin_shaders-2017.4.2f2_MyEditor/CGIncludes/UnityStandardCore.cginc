@@ -17,6 +17,7 @@
 //-------------------------------------------------------------------------------------
 // counterpart for NormalizePerPixelNormal
 // 对应于 NormalizePerPixelNormal
+// 这两个函数的区别将决定在非常近的角度会不会有数值偏差
 // skips normalization per-vertex and expects normalization to happen per-pixel
 // 跳过在Vertex程序中Normalize，并在Fragment程序中进行
 half3 NormalizePerVertexNormal (float3 n) // takes float to avoid overflow // 采用float 类型避免溢出

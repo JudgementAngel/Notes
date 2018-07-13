@@ -183,6 +183,9 @@ realDissolveAmount = Remap(1-dissolveAmount,0,1,-0.1,1.1);
 clip(realDissolveAmount - reference);
 dissolveEdge = 1 - saturate(Remap(realDissolveAmount - reference,0,width*0.1,-hardness,hardness));
 
+如果在顶点程序中归一化，然后从顶点程序传到片段程序中，可能出现数据丢失，要保证精度就统一在片段程序中归一化，不过这两者只有在特写镜头才能很明显地看出区别
+
+Unity 使用延迟渲染之后，即使场景中只有一个主灯光也会对物体的渲染有影响
 
 02083963555
 13686985677
