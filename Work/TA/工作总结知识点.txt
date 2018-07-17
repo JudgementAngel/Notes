@@ -187,5 +187,7 @@ dissolveEdge = 1 - saturate(Remap(realDissolveAmount - reference,0,width*0.1,-ha
 
 Unity 使用延迟渲染之后，即使场景中只有一个主灯光也会对物体的渲染有影响
 
+T4M 会在场景中创建隐藏的物体来覆盖原本物体的显示，使用T4MPreview，有可能导致显示不正确，一般都不会出现这个问题，不排除美术的迷之操作。2018/07/17/02:26
+
 02083963555
 13686985677
