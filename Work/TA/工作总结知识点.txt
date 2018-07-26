@@ -189,5 +189,10 @@ Unity 使用延迟渲染之后，即使场景中只有一个主灯光也会对物体的渲染有影响
 
 T4M 会在场景中创建隐藏的物体来覆盖原本物体的显示，使用T4MPreview，有可能导致显示不正确，一般都不会出现这个问题，不排除美术的迷之操作。2018/07/17/02:26
 
+如果没有切线，切线会自动附默认值为(1,0,0)
+
+在计算副法线的时候不要进行normalize，binormal = cross(tangent,normal) * tangent.w; 如果改成 binormal = normalize(cross(tangent,normal) * tangent.w)。编译完Shader代码后，会出现 rsq ** **，或 nrm ** ** ，如果此时没有tangent，tangent.w 会是0，这样rsq和nrm 会出现 非零值，返回结果为 FL_MAX，最终导致渲染结果出错。
+
+
 02083963555
 13686985677
