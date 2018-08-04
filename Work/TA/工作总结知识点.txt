@@ -193,6 +193,9 @@ T4M 会在场景中创建隐藏的物体来覆盖原本物体的显示，使用T4MPreview，有可能导致显示
 
 在计算副法线的时候不要进行normalize，binormal = cross(tangent,normal) * tangent.w; 如果改成 binormal = normalize(cross(tangent,normal) * tangent.w)。编译完Shader代码后，会出现 rsq ** **，或 nrm ** ** ，如果此时没有tangent，tangent.w 会是0，这样rsq和nrm 会出现 非零值，返回结果为 FL_MAX，最终导致渲染结果出错。
 
+---------------
+
+不同平台开发方向不同：PC：榨干显卡所有性能；手机：合理机能下最优的画面
 
 02083963555
 13686985677
