@@ -1,4 +1,0 @@
-﻿  Source.cpp
-d:\03_documents\notes\raytracinginoneweekend_project\chapter9\hitable_list.h(24): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
-  Chapter9.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Chapter9.exe
-  Chapter9.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\Chapter9.pdb (Partial PDB)

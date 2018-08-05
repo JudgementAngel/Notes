@@ -1,9 +1,0 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: 中间目录(x64\Debug\)包含从另一个项目(ChapterB.vcxproj)共享的文件。   这会导致错误的清除和重新生成行为。
-  Source.cpp
-d:\03_documents\notes\raytracinginoneweekend_project\chapterc\source.cpp(43): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
-d:\03_documents\notes\raytracinginoneweekend_project\chapterc\source.cpp(43): warning C4305: “参数”: 从“double”到“float”截断
-d:\03_documents\notes\raytracinginoneweekend_project\chapterc\source.cpp(44): warning C4305: “参数”: 从“double”到“float”截断
-d:\03_documents\notes\raytracinginoneweekend_project\chapterc\source.cpp(64): warning C4305: “参数”: 从“double”到“float”截断
-d:\03_documents\notes\raytracinginoneweekend_project\chapterc\source.cpp(94): warning C4305: “初始化”: 从“double”到“float”截断
-  ChapterC.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\ChapterC.exe
-  ChapterC.vcxproj -> D:\03_Documents\Notes\RayTracingInOneWeekend_Project\x64\Debug\ChapterC.pdb (Partial PDB)
