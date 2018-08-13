@@ -199,5 +199,7 @@ Unity ÌùÍ¼µÄoffsetµÄÊýÖµÊÇÒÔÒ»ÕÅÌùÍ¼Îªµ¥Î»µÄ£¬Èç¹ûÆ½ÆÌ¶à´Î£¬offsetÎª1µÄÊ±ºò¾ÍÖ»Æ
 
 ²»Í¬Æ½Ì¨¿ª·¢·½Ïò²»Í¬£ºPC£ºÕ¥¸ÉÏÔ¿¨ËùÓÐÐÔÄÜ£»ÊÖ»ú£ººÏÀí»úÄÜÏÂ×îÓÅµÄ»­Ãæ
 
+DirectX ÊÇ×ó³Ë£¬ÐÐÏòÁ¿£¬ÔÚA¿Õ¼äÏÂ¶¨ÒåµÄB¿Õ¼ä»ùÏòÁ¿£¬¹¹ÔìµÄ¾ØÕó£¬×ó³ËÒ»¸öÐÐÏòÁ¿£¨ÐÐÏòÁ¿ÔÚ×ó£¬¾ØÕóÔÚÓÒ£¬¾ØÕóÃ¿Ò»ÐÐ±íÊ¾Ò»¸ö»ùÏòÁ¿£©mul(float1x4,float4x4)£¬±íÊ¾½«Õâ¸öÏòÁ¿´ÓB¿Õ¼ä×ª»»µ½A¿Õ¼ä£¬Èç¹ûÐÐÏòÁ¿ÔÚÓÒ£¬¾ØÕóÔÚ×ó£¬ÓÃmulº¯Êý»á×Ô¶¯×ªÖÃ¾ØÕó²¢·ÅÔÚÓÒ±ßmul(float4x4,float1x4) = mul(float1x4,float4x4_T)£¬±íÊ¾½«Õâ¸öÏòÁ¿´ÓA¿Õ¼ä×ª»»µ½B¿Õ¼ä
+
 02083963555
 13686985677
