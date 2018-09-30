@@ -25,9 +25,12 @@ print(p.match('b'))
 p = re.compile('.{3}')
 print(p.match('bat'))
 
-
 p = re.compile('....-..-..')
 p = re.compile(r'(\d+)-(\d+)-(\d+)')
 print(p.match('2018-05-10').group(2))
 print(p.match('2018-05-10').groups())
-year,month,day = p.match('2018-05-10').groups()
+year, month, day = p.match('2018-05-10').groups()
+
+print(p.search('aa2018-05-10bb').group(2))
+print(p.search('aa2018-05-10bb').groups())
+year, month, day = p.match('2018-05-10').groups()
