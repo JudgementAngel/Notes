@@ -25,9 +25,15 @@ print(p.match('b'))
 p = re.compile('.{3}')
 print(p.match('bat'))
 
-
 p = re.compile('....-..-..')
 p = re.compile(r'(\d+)-(\d+)-(\d+)')
 print(p.match('2018-05-10').group(2))
 print(p.match('2018-05-10').groups())
-year,month,day = p.match('2018-05-10').groups()
+year, month, day = p.match('2018-05-10').groups()
+
+print(re.sub('c', '*', 'abcd'))
+phone = '123-456-789 # 这是电话号码'
+p2 = re.sub(r'#.*$', '', phone)
+print(p2)
+p3 = re.sub(r'\D', '', p2)
+print(p3)
