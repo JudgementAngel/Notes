@@ -31,9 +31,15 @@ print(p.match('2018-05-10').group(2))
 print(p.match('2018-05-10').groups())
 year, month, day = p.match('2018-05-10').groups()
 
+<<<<<<< HEAD
 print(re.sub('c', '*', 'abcd'))
 phone = '123-456-789 # 这是电话号码'
 p2 = re.sub(r'#.*$', '', phone)
 print(p2)
 p3 = re.sub(r'\D', '', p2)
 print(p3)
+=======
+print(p.search('aa2018-05-10bb').group(2))
+print(p.search('aa2018-05-10bb').groups())
+year, month, day = p.match('2018-05-10').groups()
+>>>>>>> bed37ccf36d7d670df7948f3b4ab9354fd9eeb92
